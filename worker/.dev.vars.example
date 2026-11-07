@@ -1,0 +1,4 @@
+# Local Worker secrets only. Copy to worker/.dev.vars and enter values privately.
+# Do not add these secrets to any VITE_ variable.
+GEMINI_API_KEY=
+OPENROUTER_API_KEY=

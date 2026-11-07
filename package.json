@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "vite",
     "dev:local": "firebase emulators:exec --only auth,firestore --project demo-shuttlewise \"vite --mode local-check-in\"",
+    "demo:reset": "node scripts/demo-reset.mjs",
     "build": "tsc --noEmit && vite build",
     "test": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test tests/*.test.mjs",
-    "test:rules": "npx --yes firebase-tools emulators:exec --only firestore --project demo-shuttlewise \"node --disable-warning=ExperimentalWarning --experimental-strip-types --test tests/firestore.mjs\""
+    "test:rules": "npx --yes firebase-tools emulators:exec --only firestore --project demo-shuttlewise \"node --disable-warning=ExperimentalWarning --experimental-strip-types --test tests/firestore.mjs\"",
+    "test:ai:live": "node --disable-warning=ExperimentalWarning --experimental-strip-types scripts/test-ai-live.mjs"
   },
   "dependencies": {
     "firebase": "^12.0.0",

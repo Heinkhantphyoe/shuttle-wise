@@ -3,12 +3,20 @@
   "main": "index.ts",
   "compatibility_date": "2025-09-01",
   "vars": {
-    "APP_ORIGIN": "",
-    "FIREBASE_PROJECT_ID": ""
+    "APP_ORIGIN": "https://shuttlewise-e77bf.web.app",
+    "FIREBASE_PROJECT_ID": "shuttlewise-e77bf",
+    "FIREBASE_PROJECT_NUMBER": "61369272200",
+    "FIREBASE_APP_ID": "1:61369272200:web:2b8c66ed166a780d4e1c3d",
+    "GEMINI_MODEL": "gemini-3.5-flash-lite"
   },
-  "ratelimits": [{
-    "name": "UID_RATE_LIMIT",
-    "namespace_id": "1001",
-    "simple": { "limit": 6, "period": 60 }
-  }]
+  "ratelimits": [
+    {
+      "name": "UID_RATE_LIMIT",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 6,
+        "period": 60
+      }
+    }
+  ]
 }

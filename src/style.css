@@ -86,8 +86,103 @@ nav button[aria-current] { background: #e6efff; border-color: #b4cbf1; }
 .times { list-style: none; padding: 0; }
 .times li { display: flex; justify-content: space-between; gap: .5rem; padding: .55rem 0; border-bottom: 1px solid var(--line); }
 .times span { color: var(--muted); }
-.columns { display: grid; gap: .85rem; }
+.columns { display: grid; gap: 1rem; min-width: 0; }
+.columns > * { min-width: 0; }
 .chart { display: flex; align-items: end; height: 90px; gap: .3rem; margin-top: .8rem; }
 .chart span { flex: 1; background: var(--blue); border-radius: .2rem .2rem 0 0; }
 .chart span.previous { background: #a8bada; }
-@media (min-width: 660px) { .columns { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 660px) { .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Travel forms reuse the existing cards and spacing. No new UI library is needed. */
+textarea { display: block; width: 100%; min-height: 80px; resize: vertical; padding: .65rem .75rem; font: inherit; border: 1px solid #a9b8cb; border-radius: .65rem; color: inherit; background: white; }
+textarea:focus-visible, summary:focus-visible { outline: 3px solid #87b1ff; outline-offset: 2px; }
+fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.travel-admin { margin-block: 1.5rem 2rem; }
+.travel-admin .columns { align-items: start; }
+.travel-admin summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; font-weight: 650; }
+.travel-admin .card { min-width: 0; }
+.travel-admin .check-label { display: flex; gap: .65rem; align-items: start; font-weight: 400; }
+.travel-admin .check-label input { flex: 0 0 22px; width: 22px; min-height: 22px; margin-top: .2rem; }
+.notice-preview { display: block; width: 100%; max-height: 28rem; object-fit: contain; margin-block: 1rem; background: #f4f6fb; border: 1px solid var(--line); }
+.validation-errors { color: #b91c1c; padding-inline-start: 1.25rem; }
+.published-notice + .published-notice { border-top: 1px solid var(--line); margin-top: 1rem; padding-top: 1rem; }
+.announcement-form { width: 100%; }
+.announcement-result { border-top: 1px solid var(--line); margin-top: 1rem; padding-top: 1rem; }
+.firebase-emulator-warning { position: static !important; margin: 0 !important; padding: .5rem 1rem !important; background: #fff4d6 !important; color: #6a3d00 !important; font: 14px/1.5 system-ui, sans-serif !important; }
+
+/* Shrink controls and long user content within their own column, rather than clipping the page. */
+:is(input, select, textarea, fieldset) { min-width: 0; max-width: 100%; }
+button { white-space: normal; overflow-wrap: anywhere; touch-action: manipulation; }
+input[type='file'] { padding: .375rem; }
+input[type='file']::file-selector-button {
+  min-height: 40px; margin-inline-end: .75rem; padding: .375rem .75rem;
+  border: 0; border-radius: .45rem; background: #eef2ff; color: #312e81; font: inherit; font-weight: 600; cursor: pointer;
+}
+
+.app.admin {
+  --blue: #4338ca; --muted: #475569; --line: #dbe1ed;
+  --admin-surface: #fff; --admin-canvas: #f4f6fb; --admin-ink: #0f172a;
+  width: 100%; max-width: 76rem; color: var(--admin-ink); background: var(--admin-canvas);
+  overflow-wrap: anywhere;
+}
+.admin .brand { padding: 1rem clamp(1rem, 3vw, 2rem); background: var(--admin-surface); color: var(--admin-ink); border-bottom: 1px solid var(--line); }
+.admin .brand small { color: var(--muted); }
+.admin .logo { color: #fff; }
+.admin .profile-switcher summary { border-color: #64748b; }
+.admin .profile-switcher summary:hover, .admin .profile-switcher[open] summary { background: #eef2ff; }
+.admin .content { padding: clamp(1.25rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem); }
+.admin h1 { margin: .25rem 0 .5rem; font-size: clamp(1.75rem, 3vw, 2.125rem); letter-spacing: -.035em; }
+.admin h2 { font-size: 1.375rem; line-height: 1.35; letter-spacing: -.02em; }
+.admin h3 { font-size: 1.0625rem; line-height: 1.45; }
+.admin p { max-width: 72ch; }
+.admin :is(button, input, select, summary) { min-height: 48px; }
+.admin :is(input, select, textarea) { border-color: #64748b; line-height: 1.5; }
+.admin :is(button, input, select, textarea, summary, a):focus-visible { outline-color: var(--blue); }
+.admin :is(input, select, textarea):disabled { background: #f1f5f9; }
+.admin label { gap: .5rem; margin-block: 1rem .5rem; font-size: .9375rem; }
+.admin :is(input, select, textarea) { font-size: 1rem; }
+.admin .card { background: var(--admin-surface); padding: clamp(1rem, 2.5vw, 1.5rem); }
+.admin .card > h3 { margin-bottom: .75rem; }
+.admin .secondary { color: var(--blue); border-color: #a5b4c9; }
+.admin button:not(:disabled):hover { background: #3730a3; }
+.admin button.secondary:not(:disabled):hover { background: #eef2ff; }
+.admin .actions { gap: .75rem; margin-top: 1rem; }
+.admin .actions button { margin-top: 0; }
+.admin .notice { margin-block: 1rem; background: #eef2ff; color: #312e81; }
+.admin-page-heading { display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+.admin-page-heading > div { min-width: 0; }
+.admin-page-heading button { flex: none; margin: 0; }
+.admin .admin-eyebrow { color: var(--blue); font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.admin .travel-admin { margin-block: 0 2.5rem; }
+.travel-admin > p { margin-block: .5rem 1rem; }
+.announcement-workspace { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 1.25rem; margin-top: 1.25rem; }
+.announcement-compose { min-width: 0; }
+.announcement-workspace .card { margin-block: 0; }
+.announcement-workspace .announcement-form { border-top: 3px solid var(--blue); }
+.announcement-form textarea { min-height: 10rem; }
+.admin .form-help { font-size: .875rem; line-height: 1.6; }
+.admin .check-label { min-height: 48px; align-items: center; }
+.announcement-result { padding-top: 1.25rem; margin-top: 1.25rem; }
+.announcement-result > p + p { margin-top: .75rem; }
+.published-announcements > p { margin-top: 1rem; }
+.published-notice { padding-block: .5rem; }
+.published-notice .actions button { flex-basis: 100%; }
+.travel-admin > details.card { margin-block: 1.25rem; padding-block: .625rem; }
+.travel-admin > details.card > summary { display: list-item; align-content: center; margin-inline-start: 1rem; }
+.admin .dashboard-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+.dashboard-section > h2 { margin-bottom: .5rem; }
+.queue-summary h3 { font-size: 1.0625rem; }
+.queue-count { display: block; margin-block: .75rem .25rem; color: var(--admin-ink); font-size: 2.5rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.admin .columns > .card { margin-block: .5rem 0; }
+
+@media (min-width: 960px) {
+  .announcement-workspace { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 1.5rem; }
+}
+@media (max-width: 659px) {
+  .admin-page-heading > div { flex-basis: 100%; }
+  .admin-page-heading button { margin-top: -.25rem; }
+}
+@media (max-width: 359px) {
+  .admin .actions { flex-direction: column; }
+  .admin .actions button { flex-basis: auto; width: 100%; }
+}

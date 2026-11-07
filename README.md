@@ -2,6 +2,10 @@
 
 The React demo provides two weekday timetables, live shuttle queues and Grab shares, and an admin dashboard. The original prototype and timetable images are the design and schedule references.
 
+Transport announcements now add reviewed temporary delays/cancellations without changing the standard timetable. Home and Timetable share the same route-specific calculations. See [AI_SETUP.md](AI_SETUP.md) for the admin workflow, safe Gemini key setup, and the local demo reset. New AI calls are not live until the Worker, keys, and App Check are configured.
+
+The standard dataset follows APU's schedule effective 22 October 2026: 39 APU → LRT fixed departures; 40 listed LRT → APU times with continuous service from 7:30–8:45 am. Continuous service does not have invented individual departure times. The late APU services retain their limited-space labels.
+
 ## Run locally
 
 Use Node.js 22.12 or newer. Install dependencies and start Vite.
@@ -30,10 +34,12 @@ Configure the pickup coordinates in `.env.local`, open the URL printed by Vite, 
 2. In Firebase Console, open **Project settings → General → Your apps → Web app → SDK setup and configuration → Config**. If there is no web app, register one with the **</>** button. Copy `apiKey`, `authDomain`, `projectId`, and `appId` to their corresponding entries in `.env.local` using `.env.example` as a template. Enter the confirmed latitude and longitude for each boarding spot. Check-in is disabled for routes without a configured pickup. [Firebase web setup](https://firebase.google.com/docs/web/setup)
 3. Register the web app with reCAPTCHA Enterprise App Check, enable enforcement for Firebase AI Logic, and use the Gemini Developer API backend. Set the site key and a supported Gemini model in `.env.local`. [Firebase AI Logic setup](https://firebase.google.com/docs/ai-logic/get-started?platform=web) · [App Check setup](https://firebase.google.com/docs/ai-logic/app-check)
 4. Have each intended admin sign in with Google at `/admin`. In the Firebase console, create a document at `admins/{firebaseUid}` for each authorized account. The Firestore rules use document existence and the Google sign-in provider.
-5. Set `APP_ORIGIN` to the exact HTTPS Hosting origin with no trailing slash, and `FIREBASE_PROJECT_ID` to the project ID in `worker/wrangler.jsonc`. Authenticate Wrangler, deploy the Worker, and add the OpenRouter key using Wrangler’s interactive secret prompt. Set `VITE_AI_WORKER_URL` to the deployed Worker URL. [Cloudflare Worker secrets](https://developers.cloudflare.com/workers/configuration/secrets/)
+5. Follow [AI_SETUP.md](AI_SETUP.md) for the Gemini travel notices, App Check, real-provider tests, and remaining owner setup. Set `APP_ORIGIN` to the exact HTTPS Hosting origin with no trailing slash, and check the Firebase identifiers in `worker/wrangler.jsonc`. Authenticate Wrangler, deploy the Worker, and add `GEMINI_API_KEY` using the interactive secret prompt. Set `VITE_AI_WORKER_URL` to the deployed Worker URL. The existing admin briefing can additionally use its OpenRouter fallback. [Cloudflare Worker secrets](https://developers.cloudflare.com/workers/configuration/secrets/)
 
 ```sh
 npx wrangler deploy --config worker/wrangler.jsonc
+npx wrangler secret put GEMINI_API_KEY --config worker/wrangler.jsonc
+# Optional: existing admin briefing backup
 npx wrangler secret put OPENROUTER_API_KEY --config worker/wrangler.jsonc
 npm run build
 npx firebase-tools deploy --only firestore:rules,hosting --project YOUR_PROJECT_ID

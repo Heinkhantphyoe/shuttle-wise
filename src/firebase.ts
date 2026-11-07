@@ -7,7 +7,7 @@ import { firebaseConfig } from './config'
 export const adminPage = location.pathname.replace(/\/$/, '') === '/admin'
 export const useEmulators = import.meta.env.DEV
   && (import.meta.env.MODE === 'local-check-in' || import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true')
-const config = useEmulators ? { projectId: 'demo-shuttlewise', apiKey: 'demo-key' } : firebaseConfig
+const config = useEmulators ? { projectId: 'demo-shuttlewise', apiKey: 'demo-key', authDomain: 'demo-shuttlewise.firebaseapp.com' } : firebaseConfig
 export const app = Object.values(config).every(Boolean)
   ? initializeApp(config, adminPage ? 'shuttlewise-admin' : 'shuttlewise-student') : undefined
 const siteKey = import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY

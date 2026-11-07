@@ -2,6 +2,7 @@ import { GoogleAuthProvider, signInWithPopup, signOut, type Auth, type User } fr
 import { doc, onSnapshot, type Firestore } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import { guidance } from './ai'
+import { TravelAdmin } from './travel-admin'
 import { watchHistory, watchQueue, type HistoryEvent } from './live'
 import { routeIds, routes, serviceDay, type RouteId } from './schedule'
 import { historyCutoff, summarize, syntheticTimes, type Trend } from './trends'
@@ -25,10 +26,13 @@ export function Admin({ auth, db, user }: { auth: Auth; db: Firestore; user?: Us
   }, [db, user])
 
   return <section className="content">
-    <h1>Admin dashboard</h1>
+    <header className="admin-page-heading">
+      <div><p className="admin-eyebrow">Transport management</p><h1>Admin dashboard</h1>
+        <p>Manage shuttle updates and check both routes.</p></div>
+      {user && allowed && <button className="secondary" onClick={() => void signOut(auth).catch(() => setError('Sign-out failed.'))}>Sign out</button>}
+    </header>
     {error && <p role="alert" className="notice">{error}</p>}
     {user && allowed ? <>
-      <button className="secondary" onClick={() => void signOut(auth).catch(() => setError('Sign-out failed.'))}>Sign out</button>
       <Dashboard key={user.uid} db={db} user={user} />
     </> : <>
       <p>{user && allowed === undefined ? 'Checking admin access…' : 'Sign in with an allowlisted Google account.'}</p>
@@ -37,7 +41,7 @@ export function Admin({ auth, db, user }: { auth: Auth; db: Firestore; user?: Us
         void signInWithPopup(auth, new GoogleAuthProvider()).catch(() => setError('Google sign-in failed. Try again.'))
       }}>Sign in with Google</button>
       {user?.providerData.some(provider => provider.providerId === 'google.com') && allowed === false &&
-        <p className="notice">This account does not have access to the dashboard.</p>}
+        <p className="notice">This account does not have access to the dashboard. Your Firebase UID: <code>{user.uid}</code>. An existing project owner can add it to the admin allowlist.</p>}
     </>}
   </section>
 }
@@ -79,12 +83,17 @@ function Dashboard({ db, user }: { db: Firestore; user: User }) {
   const metrics = { apu: apu.metrics, lrt: lrt.metrics }
   const input = JSON.stringify(metrics)
   return <>
+    <TravelAdmin db={db} user={user} />
     {error && <p role="alert" className="notice">{error}</p>}
-    <div className="columns">{routeIds.map(route => <section className="card" key={route}>
-      <h2>{routes[route].origin} → {routes[route].destination}</h2>
-      <p>{counts[route] === undefined ? 'Live queue unavailable' : `${counts[route]} students currently checked in`}</p>
+    <section className="dashboard-section" aria-labelledby="live-queues-heading">
+    <h2 id="live-queues-heading">Live queues</h2>
+    <div className="columns">{routeIds.map(route => <section className="card queue-summary" key={route}>
+      <h3>{routes[route].origin} → {routes[route].destination}</h3>
+      <p>{counts[route] === undefined ? 'Live queue unavailable' : <><strong className="queue-count">{counts[route]}</strong> students currently checked in</>}</p>
     </section>)}</div>
-    <h2>Live check-in history</h2>
+    </section>
+    <section className="dashboard-section" aria-labelledby="live-history-heading">
+    <h2 id="live-history-heading">Live check-in history</h2>
     <p>Malaysia time. The current period includes today and the preceding six days.</p>
     {history ? <>
       <div className="columns">
@@ -105,10 +114,13 @@ function Dashboard({ db, user }: { db: Firestore; user: User }) {
         }}>{loading ? 'Preparing briefing…' : 'Generate briefing'}</button>
       </section>
     </> : <p className="notice">Live history is unavailable.</p>}
-    <h2>Synthetic demo history</h2>
+    </section>
+    <section className="dashboard-section" aria-labelledby="demo-history-heading">
+    <h2 id="demo-history-heading">Synthetic demo history</h2>
     <p>Illustrative check-ins. Live totals and briefings exclude these samples.</p>
     <div className="columns">{routeIds.map(route =>
       <TrendCard key={route} route={route} trend={summarize(syntheticTimes(now, route === 'apu'), now)} />)}</div>
+    </section>
   </>
 }
 

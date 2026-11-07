@@ -8,7 +8,7 @@ import { parseGuidance, tryProviders, validAIRequest } from '../src/ai-contract.
 const timestamp = value => Date.parse(value + '+08:00')
 
 test('both timetables are sorted and have the expected ranges', () => {
-  for (const [route, count, first, last] of [['apu', 39, '10:35', '21:45'], ['lrt', 51, '07:30', '18:20']]) {
+  for (const [route, count, first, last] of [['apu', 39, '10:35', '21:45'], ['lrt', 40, '07:30', '18:20']]) {
     const { departures } = routes[route]
     assert.equal(new Set(departures).size, count)
     assert.equal(departures.length, count)

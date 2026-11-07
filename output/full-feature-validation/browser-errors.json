@@ -1,0 +1,9 @@
+{
+  "unexpectedErrors": {
+    "student": [],
+    "peer": [],
+    "admin": [],
+    "regression": []
+  },
+  "note": "Known disposable-adapter setup errors and deliberate provider-failure/stale-response HTTP errors were reviewed separately. No unexpected application errors in the tested flows."
+}

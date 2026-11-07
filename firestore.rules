@@ -35,6 +35,86 @@ service cloud.firestore {
       allow get: if self(uid) && request.auth.token.firebase.sign_in_provider == 'google.com';
     }
 
+    function validRange(range) {
+      return range == null || (range is list && range.size() == 2 && range[0] is int && range[1] is int
+        && range[0] >= 1 && range[1] >= range[0] && range[1] <= 1000000);
+    }
+    function smallText(value, size) { return value is string && value.size() <= size; }
+    function nullableTime(value) { return value == null || (value is string && value.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')); }
+    function validChange(change) {
+      return change is map && change.keys().hasAll(['route', 'type', 'departures', 'start', 'end', 'delayMinutes', 'revisedTime', 'capacity', 'pickup'])
+        && change.keys().hasOnly(['route', 'type', 'departures', 'start', 'end', 'delayMinutes', 'revisedTime', 'capacity', 'pickup'])
+        && routeValid(change.route) && change.type in ['delay', 'cancel', 'suspend', 'replacement', 'pickup', 'capacity', 'info']
+        && change.departures is list && change.departures.size() <= 60
+        && nullableTime(change.start) && nullableTime(change.end) && nullableTime(change.revisedTime)
+        && (change.delayMinutes == null || (change.delayMinutes is int && change.delayMinutes >= 1 && change.delayMinutes <= 720))
+        && (change.capacity == null || (change.capacity is int && change.capacity >= 1 && change.capacity <= 200))
+        && smallText(change.pickup, 200);
+    }
+    function revisionAdvanced() {
+      let path = /databases/$(database)/documents/travelControl/notices;
+      return getAfter(path).data.revision == (exists(path) ? get(path).data.revision : 0) + 1;
+    }
+    match /travelControl/{id} {
+      allow get: if admin();
+      allow create, update: if admin() && id == 'notices'
+        && request.resource.data.keys().hasAll(['revision', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['revision', 'updatedAt'])
+        && request.resource.data.revision is int && revisionAdvanced()
+        && request.resource.data.updatedAt == request.time;
+    }
+    match /transportNotices/{id} {
+      function validNotice() {
+        let data = request.resource.data;
+        return data.keys().hasAll(['title', 'summary', 'reason', 'sourceLabel', 'sourceExcerpt', 'sourceUrl', 'serviceDate',
+          'visibleFrom', 'expiresAt', 'demo', 'changes', 'status', 'version', 'updatedAt'])
+          && data.keys().hasOnly(['title', 'summary', 'reason', 'sourceLabel', 'sourceExcerpt', 'sourceUrl', 'serviceDate',
+          'visibleFrom', 'expiresAt', 'demo', 'changes', 'status', 'version', 'updatedAt'])
+          && smallText(data.title, 120) && data.title.size() > 0 && smallText(data.summary, 1000) && data.summary.size() > 0
+          && smallText(data.reason, 300) && smallText(data.sourceLabel, 120) && data.sourceLabel.size() > 0
+          && smallText(data.sourceExcerpt, 2000) && smallText(data.sourceUrl, 500)
+          && (data.sourceUrl == '' || data.sourceUrl.matches('^https://[^ ]+$'))
+          && data.serviceDate is string && data.serviceDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          && data.visibleFrom is int && data.visibleFrom >= 0 && data.expiresAt is int
+          && data.expiresAt > data.visibleFrom && data.expiresAt - data.visibleFrom <= 2764800000
+          && data.demo is bool && data.changes is list && data.changes.size() >= 1 && data.changes.size() <= 2
+          && validChange(data.changes[0]) && (data.changes.size() == 1 || (validChange(data.changes[1]) && data.changes[0].route != data.changes[1].route))
+          && data.status in ['published', 'withdrawn', 'superseded'] && data.version is int
+          && data.updatedAt == request.time && revisionAdvanced();
+      }
+      allow get, list: if admin() || (signedIn() && resource.data.status == 'published');
+      allow create: if admin() && validNotice() && request.resource.data.status == 'published' && request.resource.data.version == 1;
+      allow update: if admin() && validNotice() && request.resource.data.version == resource.data.version + 1;
+    }
+    match /travelSettings/{route} {
+      function validSettings() {
+        let data = request.resource.data;
+        return data.keys().hasAll(['capacity', 'normalFare', 'rushFare', 'rushWindows', 'sourceLabel', 'demo', 'version', 'updatedAt'])
+          && data.keys().hasOnly(['capacity', 'normalFare', 'rushFare', 'rushWindows', 'sourceLabel', 'demo', 'version', 'updatedAt'])
+          && routeValid(route) && (data.capacity == null || (data.capacity is int && data.capacity >= 1 && data.capacity <= 200))
+          && validRange(data.normalFare) && validRange(data.rushFare)
+          && data.rushWindows is list && data.rushWindows.size() <= 14
+          && smallText(data.sourceLabel, 120) && data.sourceLabel.size() > 0 && data.demo is bool
+          && data.version is int && data.updatedAt == request.time;
+      }
+      allow get: if signedIn();
+      allow create: if admin() && validSettings() && request.resource.data.version == 1;
+      allow update: if admin() && validSettings() && request.resource.data.version == resource.data.version + 1;
+    }
+    match /transportNoticeAudit/{id} {
+      allow read: if admin();
+      allow create, update: if admin() && request.resource.data.keys().hasOnly(['adminUid', 'version', 'action', 'updatedAt'])
+        && request.resource.data.adminUid == request.auth.uid && request.resource.data.version is int
+        && request.resource.data.action in ['publish', 'withdraw', 'supersede'] && request.resource.data.updatedAt == request.time;
+    }
+    match /travelSettingsAudit/{route} {
+      allow read: if admin();
+      allow create, update: if admin() && routeValid(route)
+        && request.resource.data.keys().hasOnly(['adminUid', 'version', 'updatedAt'])
+        && request.resource.data.adminUid == request.auth.uid && request.resource.data.version is int
+        && request.resource.data.updatedAt == request.time;
+    }
+
     match /activity/{uid} {
       function newCheckIn() {
         let data = request.resource.data;

@@ -3,9 +3,10 @@ import type { User } from 'firebase/auth'
 import type { Firestore } from 'firebase/firestore'
 import { pickups } from './config'
 import { useEmulators } from './firebase'
-import { updateActivity, watchActivity, watchQueue, watchRide, watchRideMembership, watchRides, type Activity, type CheckIn, type Ride, type RideListing, type RideMembership, type Row } from './live'
+import { updateActivity, watchActivity, watchRide, watchRideMembership, watchRides, type Activity, type Ride, type RideListing, type RideMembership, type Row } from './live'
 import { confirmPickup } from './pickup'
-import { formatTime, formatWeekday, routeIds, routes, scheduleFor, type RouteId } from './schedule'
+import { routeIds, routes, type RouteId } from './schedule'
+import { NextDeparture, TravelAnnouncements, TravelComparison, TravelTimetable, useTravelSnapshot } from './travel-student'
 
 const tabs = {
   home: { label: 'Home', icon: 'M3 10 12 3l9 7v11h-6v-7H9v7H3z' },
@@ -114,6 +115,7 @@ function fareFrom(value: FormDataEntryValue | null) {
 }
 
 export function Student({ db, user }: Session) {
+  const [preferredRoom, setPreferredRoom] = useState<string>()
   const [route, setRoute] = useState<RouteId>('apu')
   const [view, setView] = useState(studentView)
   const tab = view === 'find' ? 'rides' : view
@@ -268,9 +270,8 @@ export function Student({ db, user }: Session) {
     }
   }, 'You left the ride.')
   const selected = routes[route]
-  const routeLabel = `${selected.origin} → ${selected.destination}`
   const point = pickups[route]
-  const schedule = scheduleFor(route, now)
+  const { comparison, settingsError } = useTravelSnapshot(db, user, route, now, inRide)
   const ready = activityReady && !busy
   const checkInHere = activity?.kind === 'queue' && activity.route === route
   const canShare = (pickup: RouteId) => ready && membershipReady && !inRide
@@ -287,21 +288,28 @@ export function Student({ db, user }: Session) {
   }, 'You’re checked in.')
 
   return <>
-    <section className="content student">
+    <section className="content student" data-view={tab}>
+      <header className="student-page-heading">
       <p className="student-eyebrow">{tab === 'home' ? 'Campus transit' : tab === 'timetable' ? 'Plan your trip' : 'Split the fare'}</p>
       <h1 ref={heading} tabIndex={-1}>{browsingRides ? 'Find a ride' : tab === 'home' ? 'Campus shuttle' : tabs[tab].label}</h1>
+      </header>
       {!browsingRides && <RoutePicker key={tab} route={route} disabled={busy} onChange={setRoute} />}
-      {tab === 'home' && <section className="hero departure-card">
-        <small>Next scheduled departure</small>
-        <h2 className={schedule.next !== undefined ? 'departure-time' : undefined}>{schedule.next !== undefined ? formatTime(schedule.next)
-          : schedule.today.length ? 'Service has ended for today' : 'No scheduled service today'}</h2>
-        {schedule.next === undefined && <p>Next weekday’s first departure · {formatWeekday(schedule.nextWeekday)} at {formatTime(schedule.nextWeekday)}</p>}
-        <p className="departure-route">{routeLabel} <span>Malaysia time</span></p>
-      </section>}
+      {(tab === 'home' || tab === 'timetable') && <TravelAnnouncements comparison={comparison} now={now} />}
       {tab === 'home' && <>
-        <section className="card">
+        <NextDeparture comparison={comparison} now={now} />
+        <TravelComparison comparison={comparison} now={now} user={user} inRide={inRide}
+          aiReady={activityReady && membershipReady && comparison.queueCount !== undefined && comparison.roomsAvailable !== undefined}
+          onTimetable={event => navigate(event, 'timetable')}
+          onRides={event => { setPreferredRoom(comparison.cheapest?.id); navigate(event, inRide ? 'rides' : 'find') }} />
+        {settingsError && <p className="notice">Route settings unavailable: {settingsError}</p>}
+      </>}
+      {tab === 'home' && <>
+        <section className="card queue-card">
           <h2>{checkInHere ? 'You’re checked in' : 'Waiting at the stop?'}</h2>
-          <QueueStatus key={route} route={route} db={db} user={user} checkedIn={checkInHere} />
+          <div role="status">
+            <p>{comparison.queueCount === undefined ? 'Live queue count is unavailable or loading.' : `${comparison.queueCount} students checked in at ${selected.origin}.`}</p>
+            {checkInHere && comparison.checkedIn && <p>Your position among checked-in students is {comparison.position}.</p>}
+          </div>
           {!point && <p>The {selected.origin} pickup coordinates are unconfirmed.</p>}
           {activity?.kind === 'queue'
             ? <div className="actions">
@@ -318,19 +326,11 @@ export function Student({ db, user }: Session) {
             </button>}
           {legacyRide && inRide && <p>Manage or leave your current Grab group before checking in.</p>}
         </section>
-        <section className="card"><h2>Share a Grab to {selected.destination}</h2><p>Find a group with up to four people.</p>
+        <section className="card grab-prompt"><h2>Share a Grab to {selected.destination}</h2><p>Find a group with up to four people.</p>
           <FindRideLink onClick={event => navigate(event, 'find')} />
         </section>
       </>}
-      {tab === 'timetable' && <section className="card">
-        <h2>{formatWeekday(now)} departures</h2>
-        <p>Scheduled times · Malaysia time</p>
-        {schedule.today.length ? <ul className="times">{schedule.today.map(time => <li key={time} data-next={time === schedule.next || undefined}>
-          <time dateTime={new Date(time).toISOString()}>{formatTime(time)}</time>
-          <span>{time === schedule.next ? 'Next shuttle' : time < now ? 'Scheduled earlier' : 'Upcoming'}</span>
-        </li>)}</ul> : <p>Shuttles run Monday through Friday.</p>}
-        {schedule.next === undefined && <p className="notice">Next weekday’s first departure · {formatWeekday(schedule.nextWeekday)} at {formatTime(schedule.nextWeekday)}</p>}
-      </section>}
+      {tab === 'timetable' && <TravelTimetable comparison={comparison} now={now} />}
       {tab === 'rides' && <>
         {inRide && currentRide ? <section className="card">
           <h2>Your Grab group to {routes[currentRide.route].destination}</h2>
@@ -359,7 +359,7 @@ export function Student({ db, user }: Session) {
           {browsingRides ? <>
             <a className="student-link" href={viewUrl('rides')} onClick={event => navigate(event, 'rides')}>Back to Grab shares</a>
             {activityReady && activity?.kind !== 'queue' && <p>Check in at a ride’s pickup to join it.</p>}
-            <RideList db={db} user={user} canJoin={canShare} join={(ride, name) => {
+            <RideList db={db} user={user} preferredRoom={preferredRoom} canJoin={canShare} join={(ride, name) => {
               setPendingShare({
                 action: 'Join',
                 route: ride.route,
@@ -425,22 +425,6 @@ export function Student({ db, user }: Session) {
   </>
 }
 
-function QueueStatus({ route, db, user, checkedIn }: Session & { route: RouteId; checkedIn: boolean }) {
-  const [entries, setEntries] = useState<Row<CheckIn>[]>()
-  const [error, setError] = useState('')
-  useEffect(() => {
-    if (!db || !user) return
-    return watchQueue(db, route, setEntries, () => { setEntries(undefined); setError(unavailable) })
-  }, [route, db, user])
-  const index = entries?.findIndex(entry => entry.id === user?.uid) ?? -1
-  return <>
-    <div role="status">
-      <p>{error || (entries ? `${entries.length} students checked in at ${routes[route].origin}.` : db && user ? 'Loading live queue…' : 'Live queue count is unavailable.')}</p>
-      {checkedIn && index >= 0 && <p>Your position among checked-in students is {index + 1}.</p>}
-    </div>
-  </>
-}
-
 function RideFare({ fare, count }: { fare: number; count: number }) {
   return <div className="ride-fare">
     <p><strong>{money(fare / count)}</strong> estimated per person</p>
@@ -448,7 +432,8 @@ function RideFare({ fare, count }: { fare: number; count: number }) {
   </div>
 }
 
-function RideList({ db, user, canJoin, join }: Session & {
+function RideList({ db, user, canJoin, join, preferredRoom }: Session & {
+  preferredRoom?: string
   canJoin: (route: RouteId) => boolean
   join: (ride: Row<RideListing>, name: string) => void
 }) {
@@ -479,7 +464,9 @@ function RideList({ db, user, canJoin, join }: Session & {
   return <>
     {!rides?.length && <div className="card" role="status"><p>{error || (rides ? 'No Grab shares are open right now.'
       : db && user ? 'Loading Grab shares…' : 'Live Grab listings are unavailable.')}</p></div>}
-    {rides?.map(ride => <section key={ride.id} className="card">
+    {rides && preferredRoom && !rides.some(ride => ride.id === preferredRoom && ride.count < 4) && <p className="notice">The room you viewed is no longer available. Review the current listings.</p>}
+    {rides && [...rides].sort((a, b) => Number(b.id === preferredRoom) - Number(a.id === preferredRoom)).map(ride => <section key={ride.id} className="card">
+      {ride.id === preferredRoom && <p className="student-eyebrow">Room from your travel comparison</p>}
       <h2>{routes[ride.route].origin} → {routes[ride.route].destination}</h2>
       <RideFare fare={ride.fare} count={ride.count} />
       {ride.count >= 4 ? <p>This ride is full.</p> : <form onSubmit={event => submit(event, ride)}>

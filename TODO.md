@@ -8,7 +8,7 @@ Based on [PLAN.md](PLAN.md). Check off each task once its result has been verifi
 
 ## Routes and timetable
 
-- [x] Transcribe and compare every departure against the timetable images. APU → Bukit Jalil LRT has 39 departures from 10:35 a.m. to 9:45 p.m. Bukit Jalil LRT → APU has 51 departures from 7:30 a.m. to 6:20 p.m.
+- [x] Verify the standard dataset against APU's official 22 October 2026 schedule: 39 APU → LRT departures; 40 listed LRT → APU times plus the continuous-service period from 7:30–8:45 a.m. Preserve limited-space labels on late APU departures.
 - [x] Implement Monday–Friday service in Malaysia time for exactly those two routes. Show no scheduled service on weekends. After the final departure, show that service has ended for the day and list the next weekday’s first departure separately.
 - [x] Configure and deploy the supplied pickup coordinates for both routes.
 
@@ -31,6 +31,10 @@ Based on [PLAN.md](PLAN.md). Check off each task once its result has been verifi
 - [x] Compute peak windows, volumes, and period comparisons for the dashboard and admin briefings.
 
 ## AI and fallback
+
+- [x] Implement reviewed transport notices, temporary route-specific times, automatic student comparison, server-side Gemini extraction/advice, and setup status. See [AI_SETUP.md](AI_SETUP.md).
+- [x] Verify local calculations, permissions, and the two-session admin-to-student workflow. See [validation results](output/ai-travel-validation/RESULTS.md).
+- [ ] Add the Gemini Worker secret and project/App Check settings, deploy the matching rules and frontend, and verify a live provider call.
 
 - [x] Implement Gemini through Firebase AI Logic with App Check and a single OpenRouter `openrouter/free` fallback for provider failures or invalid output.
 - [ ] Enable Firebase AI Logic and App Check enforcement in the Firebase project and configure a Gemini model.

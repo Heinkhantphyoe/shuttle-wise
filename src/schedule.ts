@@ -12,8 +12,7 @@ export const routes = {
   lrt: {
     origin: 'Bukit Jalil LRT', destination: 'APU',
     departures: [
-      '07:30', '07:35', '07:40', '07:50', '07:55', '08:00', '08:05', '08:15',
-      '08:20', '08:25', '08:30', '08:35', '08:45', '09:00', '09:10', '09:20',
+      '07:30', '08:45', '09:00', '09:10', '09:20',
       '09:30', '09:50', '10:00', '10:05', '10:10', '10:15', '10:30', '10:35',
       '10:45', '11:00', '11:05', '11:10', '11:25', '11:40', '12:10', '12:30',
       '12:45', '13:00', '13:15', '13:20', '13:25', '13:40', '14:10', '14:25',
@@ -26,6 +25,12 @@ export const routes = {
 export type RouteId = keyof typeof routes
 export const routeIds: RouteId[] = ['apu', 'lrt']
 export const malaysiaZone = 'Asia/Kuala_Lumpur'
+export const timetableSource = {
+  version: 'V1_20261022',
+  effectiveDate: '2026-10-22',
+  url: 'https://publicwebsite-media.apu.edu.my/assets/2026-10/2026Oct22_APU-SHUTTLE-SERVICES.pdf',
+}
+export const routeLabel = (route: RouteId) => `${routes[route].origin} → ${routes[route].destination}`
 const dayMs = 86_400_000
 const offsetMs = 8 * 3_600_000
 
@@ -33,18 +38,31 @@ export function serviceDay(now: number) {
   return Math.floor((now + offsetMs) / dayMs)
 }
 
-function weekday(day: number) {
+export function weekday(day: number) {
   const dayOfWeek = new Date(day * dayMs).getUTCDay()
   return dayOfWeek >= 1 && dayOfWeek <= 5
 }
 
-function departuresOn(route: RouteId, day: number) {
+export function departuresOn(route: RouteId, day: number) {
   if (!weekday(day)) return []
   const midnight = day * dayMs - offsetMs
   return routes[route].departures.map(time => {
     const [hour, minute] = time.split(':').map(Number)
     return midnight + (hour * 60 + minute) * 60_000
   })
+}
+
+export function serviceDate(now: number) {
+  return new Date(now + offsetMs).toISOString().slice(0, 10)
+}
+
+export function timeOn(date: string, time: string) {
+  return Date.parse(`${date}T${time}:00+08:00`)
+}
+
+export function continuousService(route: RouteId, now: number) {
+  return route === 'lrt' && weekday(serviceDay(now))
+    && now >= timeOn(serviceDate(now), '07:30') && now < timeOn(serviceDate(now), '08:45')
 }
 
 export function scheduleFor(route: RouteId, now: number) {
