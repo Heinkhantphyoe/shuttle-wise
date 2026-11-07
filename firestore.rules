@@ -9,6 +9,7 @@ service cloud.firestore {
     }
     function routeValid(route) { return route in ['apu', 'lrt']; }
     function activityPath(uid) { return /databases/$(database)/documents/activity/$(uid); }
+    function membershipPath(uid) { return /databases/$(database)/documents/rideMemberships/$(uid); }
     function ridePath(id) { return /databases/$(database)/documents/rides/$(id); }
     function historyPath(id) { return /databases/$(database)/documents/history/$(id); }
     function listingPath(id) { return /databases/$(database)/documents/rideListings/$(id); }
@@ -17,12 +18,17 @@ service cloud.firestore {
       return activity.kind == 'queue' && activity.route == route;
     }
     function membershipAfter(uid, id, route) {
-      let activity = getAfter(activityPath(uid)).data;
-      return activity.kind == 'ride' && activity.rideId == id && activity.route == route;
+      let membership = getAfter(membershipPath(uid)).data;
+      return membership.rideId == id && membership.route == route;
     }
     function membershipBefore(uid, id) {
-      let activity = get(activityPath(uid)).data;
-      return activity.kind == 'ride' && activity.rideId == id;
+      let path = membershipPath(uid);
+      return exists(path) ? get(path).data.rideId == id
+        : get(activityPath(uid)).data.kind == 'ride' && get(activityPath(uid)).data.rideId == id;
+    }
+    function membershipRemoved(uid) {
+      return !existsAfter(membershipPath(uid)) && (!existsAfter(activityPath(uid))
+        || getAfter(activityPath(uid)).data.kind == 'queue');
     }
 
     match /admins/{uid} {
@@ -39,14 +45,6 @@ service cloud.firestore {
           && !exists(historyPath(data.eventId))
           && event.route == data.route && event.joinedAt == request.time;
       }
-      function switchToRide() {
-        let data = request.resource.data;
-        let ride = getAfter(ridePath(data.rideId)).data;
-        return resource.data.kind == 'queue'
-          && data.keys().hasOnly(['kind', 'route', 'rideId']) && data.kind == 'ride'
-          && data.route == resource.data.route && ride.route == data.route
-          && ride.status == 'open' && uid in ride.members;
-      }
       function canLeaveRide() {
         let ride = getAfter(ridePath(resource.data.rideId)).data;
         return ride.status != 'open' || !(uid in ride.members);
@@ -54,11 +52,28 @@ service cloud.firestore {
       allow get: if self(uid) || admin();
       allow list: if signedIn() && resource.data.kind == 'queue';
       allow create: if self(uid) && newCheckIn();
-      allow update: if self(uid) && (
-        (request.resource.data.kind == 'ride' && switchToRide())
-        || (resource.data.kind == 'ride' && get(ridePath(resource.data.rideId)).data.status != 'open' && newCheckIn())
-      );
+      allow update: if self(uid) && resource.data.kind == 'ride'
+        && get(ridePath(resource.data.rideId)).data.status != 'open' && newCheckIn();
       allow delete: if self(uid) && (resource.data.kind == 'queue' || canLeaveRide());
+    }
+
+    match /rideMemberships/{uid} {
+      function validMembership() {
+        let data = request.resource.data;
+        let ride = getAfter(ridePath(data.rideId)).data;
+        return data.keys().hasOnly(['route', 'rideId']) && ride.status == 'open'
+          && ride.route == data.route && uid in ride.members
+          && getAfter(activityPath(uid)).data == get(activityPath(uid)).data
+          && queueBefore(uid, data.route);
+      }
+      function canLeaveRide() {
+        let ride = getAfter(ridePath(resource.data.rideId)).data;
+        return ride.status != 'open' || !(uid in ride.members);
+      }
+      allow get: if self(uid);
+      allow create: if self(uid) && validMembership();
+      allow update: if self(uid) && get(ridePath(resource.data.rideId)).data.status != 'open' && validMembership();
+      allow delete: if self(uid) && canLeaveRide();
     }
 
     match /history/{id} {
@@ -116,7 +131,7 @@ service cloud.firestore {
             (before.get('listed', false) && !(uid in before.members) && uid in after.members && validName(after.members[uid])
               && queueBefore(uid, before.route) && membershipAfter(uid, id, before.route))
             || (uid != before.host && uid in before.members && !(uid in after.members)
-              && membershipBefore(uid, id) && !existsAfter(activityPath(uid)))
+              && membershipBefore(uid, id) && membershipRemoved(uid))
           );
       }
       function updateHost(uid) {
@@ -125,7 +140,7 @@ service cloud.firestore {
         return uid == resource.data.host && membershipBefore(uid, id) && (
           (changes.hasOnly(['fare']) && validFare(after.fare))
           || (changes.hasOnly(['status']) && after.status in ['departed', 'cancelled']
-            && !existsAfter(activityPath(uid)))
+            && membershipRemoved(uid))
         );
       }
       allow get: if signedIn() && request.auth.uid in resource.data.members;

@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:local": "firebase emulators:exec --only auth,firestore --project demo-shuttlewise \"vite --mode local-check-in\"",
     "build": "tsc --noEmit && vite build",
     "test": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test tests/*.test.mjs",
     "test:rules": "npx --yes firebase-tools emulators:exec --only firestore --project demo-shuttlewise \"node --disable-warning=ExperimentalWarning --experimental-strip-types --test tests/firestore.mjs\""

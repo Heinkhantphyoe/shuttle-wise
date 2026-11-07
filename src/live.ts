@@ -1,11 +1,12 @@
 import {
   collection, doc, FieldPath, onSnapshot, query, runTransaction, serverTimestamp, where,
-  type Firestore, type QueryDocumentSnapshot, type Timestamp,
+  type Firestore, type FirestoreError, type QueryDocumentSnapshot, type Timestamp,
 } from 'firebase/firestore'
 import type { RouteId } from './schedule'
 
 export type CheckIn = { kind: 'queue'; route: RouteId; joinedAt: Timestamp; eventId: string }
-export type RideActivity = { kind: 'ride'; route: RouteId; rideId: string }
+export type RideMembership = { route: RouteId; rideId: string }
+type RideActivity = RideMembership & { kind: 'ride' }
 export type Activity = CheckIn | RideActivity
 export type Ride = {
   route: RouteId
@@ -21,7 +22,8 @@ export type HistoryEvent = { route: RouteId; joinedAt: Timestamp }
 type Command =
   | { type: 'check-in'; route: RouteId }
   | { type: 'board'; route: RouteId; eventId: string }
-  | { type: 'leave' }
+  | { type: 'leave-queue' }
+  | { type: 'leave-ride' }
   | { type: 'host'; route: RouteId; fare: number; name: string }
   | { type: 'join'; route: RouteId; rideId: string; name: string }
   | { type: 'fare'; fare: number }
@@ -42,12 +44,16 @@ export function watchActivity(db: Firestore, uid: string, receive: (activity: Ac
   return onSnapshot(doc(db, 'activity', uid), snapshot => receive(snapshot.data() as Activity | undefined), error)
 }
 
+export function watchRideMembership(db: Firestore, uid: string, receive: (membership: RideMembership | undefined) => void, error: (error: Error) => void) {
+  return onSnapshot(doc(db, 'rideMemberships', uid), snapshot => receive(snapshot.data() as RideMembership | undefined), error)
+}
+
 export function watchRide(db: Firestore, id: string, receive: (ride: Row<Ride> | undefined) => void, error: (error: Error) => void) {
   return onSnapshot(doc(db, 'rides', id), snapshot => receive(snapshot.exists() ? row<Ride>(snapshot) : undefined), error)
 }
 
-export function watchRides(db: Firestore, route: RouteId, receive: (rides: Row<RideListing>[]) => void, error: (error: Error) => void) {
-  return onSnapshot(query(collection(db, 'rideListings'), where('route', '==', route), where('status', '==', 'open')),
+export function watchRides(db: Firestore, receive: (rides: Row<RideListing>[]) => void, error: (error: FirestoreError) => void) {
+  return onSnapshot(query(collection(db, 'rideListings'), where('status', '==', 'open')),
     snapshot => receive(snapshot.docs.map(row<RideListing>)), error)
 }
 
@@ -58,18 +64,32 @@ export function watchHistory(db: Firestore, cutoff: Date, receive: (events: Hist
 
 export function updateActivity(db: Firestore, uid: string, command: Command) {
   const activityRef = doc(db, 'activity', uid)
+  const membershipRef = doc(db, 'rideMemberships', uid)
   const eventRef = doc(collection(db, 'history'))
   const newRideRef = doc(collection(db, 'rides'))
   return runTransaction(db, async transaction => {
     const activity = (await transaction.get(activityRef)).data() as Activity | undefined
-    const currentRideRef = activity?.kind === 'ride' ? doc(db, 'rides', activity.rideId) : undefined
+    if (command.type === 'board' || command.type === 'leave-queue') {
+      if (!activity) return
+      if (activity.kind !== 'queue' || (command.type === 'board'
+        && (activity.route !== command.route || activity.eventId !== command.eventId))) {
+        throw new Error('Your check-in changed. Refresh your queue status and try again.')
+      }
+      transaction.delete(activityRef)
+      return
+    }
+
+    const membership = (await transaction.get(membershipRef)).data() as RideMembership | undefined
+    const rideActivity = membership ?? (activity?.kind === 'ride' ? activity : undefined)
+    const currentRideRef = rideActivity ? doc(db, 'rides', rideActivity.rideId) : undefined
+    const currentMembershipRef = membership ? membershipRef : activityRef
     const currentRide = currentRideRef
       ? (await transaction.get(currentRideRef)).data() as Ride | undefined : undefined
 
     switch (command.type) {
       case 'check-in': {
         if (activity?.kind === 'queue') throw new Error('Leave your current queue first.')
-        if (currentRide?.status === 'open') throw new Error('Leave your current ride first.')
+        if (activity?.kind === 'ride' && currentRide?.status === 'open') throw new Error('Leave your current ride first.')
         const joinedAt = serverTimestamp()
         transaction.set(activityRef, { kind: 'queue', route: command.route, joinedAt, eventId: eventRef.id })
         transaction.set(eventRef, { route: command.route, joinedAt })
@@ -80,6 +100,7 @@ export function updateActivity(db: Firestore, uid: string, command: Command) {
         if (activity?.kind !== 'queue' || activity.route !== command.route) {
           throw new Error('Check in at this pickup before hosting or joining a ride.')
         }
+        if (currentRide?.status === 'open') throw new Error('Leave your current ride first.')
         if (command.type === 'host') {
           transaction.set(newRideRef, {
             route: command.route, host: uid, fare: command.fare, members: { [uid]: command.name }, status: 'open', listed: true,
@@ -87,7 +108,7 @@ export function updateActivity(db: Firestore, uid: string, command: Command) {
           transaction.set(doc(db, 'rideListings', newRideRef.id), {
             route: command.route, fare: command.fare, status: 'open', count: 1,
           })
-          transaction.set(activityRef, { kind: 'ride', route: command.route, rideId: newRideRef.id })
+          transaction.set(membershipRef, { route: command.route, rideId: newRideRef.id })
           break
         }
         const rideRef = doc(db, 'rides', command.rideId)
@@ -98,27 +119,19 @@ export function updateActivity(db: Firestore, uid: string, command: Command) {
         }
         transaction.update(rideRef, new FieldPath('members', uid), command.name)
         transaction.update(listingRef, { count: listing.count + 1 })
-        transaction.set(activityRef, { kind: 'ride', route: command.route, rideId: rideRef.id })
+        transaction.set(membershipRef, { route: command.route, rideId: rideRef.id })
         break
       }
-      case 'board': {
-        if (!activity) break
-        if (activity.kind !== 'queue' || activity.route !== command.route || activity.eventId !== command.eventId) {
-          throw new Error('Your check-in changed. Refresh your queue status and try again.')
-        }
-        transaction.delete(activityRef)
-        break
-      }
-      case 'leave': {
-        if (!activity) break
-        if (currentRideRef && currentRide?.status === 'open') {
+      case 'leave-ride': {
+        if (!currentRideRef) break
+        if (currentRide?.status === 'open') {
           if (currentRide.host === uid) throw new Error('Close or cancel your ride first.')
           const members = { ...currentRide.members }
           delete members[uid]
           transaction.update(currentRideRef, { members })
           if (currentRide.listed) transaction.update(doc(db, 'rideListings', currentRideRef.id), { count: Object.keys(members).length })
         }
-        transaction.delete(activityRef)
+        transaction.delete(currentMembershipRef)
         break
       }
       case 'fare':
@@ -129,7 +142,7 @@ export function updateActivity(db: Firestore, uid: string, command: Command) {
         const changes = command.type === 'fare' ? { fare: command.fare } : { status: command.status }
         transaction.update(currentRideRef, changes)
         if (currentRide.listed) transaction.update(doc(db, 'rideListings', currentRideRef.id), changes)
-        if (command.type === 'close') transaction.delete(activityRef)
+        if (command.type === 'close') transaction.delete(currentMembershipRef)
         break
       }
     }

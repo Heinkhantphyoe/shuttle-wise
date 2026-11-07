@@ -1,0 +1,205 @@
+:root:has(.student-app) {
+  color-scheme: light;
+  background: light-dark(#f4f6fb, #0b1220);
+  scroll-padding-block-end: calc(6rem + env(safe-area-inset-bottom));
+}
+
+:root[data-student-theme='dark']:has(.student-app) { color-scheme: dark; }
+
+:root:has(.student-app)::view-transition { pointer-events: none; }
+
+:root:has(.student-app)::view-transition-group(root),
+:root:has(.student-app)::view-transition-old(root),
+:root:has(.student-app)::view-transition-new(root) { animation-duration: 220ms; }
+
+.student-app {
+  --canvas: light-dark(#f4f6fb, #0b1220);
+  --surface: light-dark(#fff, #151f32);
+  --ink: light-dark(#0f172a, #f1f5f9);
+  --muted: light-dark(#475569, #aab8cf);
+  --blue: light-dark(#4338ca, #a5b4fc);
+  --on-accent: light-dark(#fff, #0b1220);
+  --tint: light-dark(#ebebff, #242e51);
+  --line: light-dark(#dbe1ed, #33425d);
+  --field-line: light-dark(#64748b, #71829d);
+  --danger: light-dark(#b91c1c, #fda4af);
+  --gutter: clamp(1rem, 5vw, 1.5rem);
+  --easing: cubic-bezier(.2, .75, .25, 1);
+  max-width: 36rem;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: Inter, system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.student-app :is(button, input, select, summary, a):focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.student-app :is(button, input, select, summary, a) { min-block-size: 48px; min-inline-size: 48px; }
+.student-app :is(button, select, summary, a) { touch-action: manipulation; }
+.student-app :is(button, a) { transition: background-color 160ms var(--easing), transform 100ms var(--easing); }
+.student-app :is(button:not(:disabled), .student-link, .student-nav a):active { transform: scale(.98); }
+
+.student-app .brand {
+  flex-wrap: wrap;
+  gap: .5rem;
+  padding: calc(.75rem + env(safe-area-inset-top)) max(var(--gutter), env(safe-area-inset-right)) .75rem max(var(--gutter), env(safe-area-inset-left));
+  background: var(--surface);
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+
+.student-app .brand small { color: var(--muted); font-size: .75rem; }
+.student-app .logo { width: 2.5rem; height: 2.5rem; color: var(--on-accent); }
+.brand-controls { display: flex; gap: .5rem; align-items: center; margin-inline-start: auto; }
+.student-app button.theme-toggle {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border-color: var(--field-line);
+  background: var(--surface);
+  color: var(--ink);
+}
+.student-app button.theme-toggle:hover { background: var(--tint); color: var(--blue); }
+.student-app .profile-switcher summary { width: 48px; height: 48px; border-color: var(--field-line); }
+.student-app :is(.profile-links, .ride-dialog) { background: var(--surface); color: var(--ink); }
+.student-app .profile-links a { color: var(--ink); }
+.student-app .profile-links { padding: .5rem; }
+.student-app .profile-links a + a { margin-block-start: .5rem; }
+.student-app .profile-switcher[open] summary,
+.student-app .profile-switcher summary:hover,
+.student-app .profile-links a:hover,
+.student-app .profile-links a[aria-current] { background: var(--tint); color: var(--blue); }
+
+.student-app .content {
+  padding: 1.5rem max(var(--gutter), env(safe-area-inset-right)) 1.5rem max(var(--gutter), env(safe-area-inset-left));
+}
+
+.student-eyebrow {
+  color: var(--blue);
+  font-size: .75rem;
+  line-height: 1rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.student-app h1 { font-size: 2rem; line-height: 1.1875; letter-spacing: -.035em; text-wrap: balance; }
+.student-app h2 { font-size: 1.5rem; line-height: 1.25; letter-spacing: -.025em; }
+.student-app h3 { font-size: 1.125rem; line-height: 1.5rem; }
+.student-app :is(time, .departure-time, .ride-fare) { font-variant-numeric: tabular-nums; }
+.ride-fare { margin-block: .75rem; }
+.ride-fare strong { color: var(--ink); font-size: 1.125rem; }
+
+.student-app :is(.card, .hero) { margin-block: 1.5rem 0; padding: var(--gutter); }
+.student-app .card { background: var(--surface); }
+.student-app .notice { background: var(--tint); color: var(--ink); }
+
+.student-app .departure-card {
+  background: radial-gradient(ellipse at top right, #332d72, transparent 72%), #141b38;
+  color: #fff;
+}
+
+.departure-card small { font-size: .875rem; font-weight: 600; }
+.student-app .departure-time { font-size: 2.5rem; line-height: 1.1; margin-block: .5rem; }
+.departure-route { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem 1rem; margin-block: .75rem 0; }
+.departure-route span { font-size: .75rem; }
+
+.student-app .route-picker { background: var(--surface); }
+.student-app .route-picker :is(.route-trigger, .route-option):hover,
+.student-app .route-picker :is(.route-pin, .route-option[aria-pressed='true']) { background: var(--tint); }
+.student-app .route-picker .route-options { gap: .5rem; }
+.student-app .route-picker .route-copy small { font-size: .75rem; }
+.student-app .route-picker .route-copy strong { font-size: 1rem; }
+.student-app .route-chevron { transition: transform 160ms var(--easing); }
+
+.student-app :is(input, select) { background: var(--surface); color: var(--ink); border-color: var(--field-line); }
+.student-app button { color: var(--on-accent); }
+.student-app .actions { gap: .5rem; }
+.student-app .actions button { width: auto; }
+.student-app button.secondary, .student-link {
+  background: var(--surface);
+  color: var(--blue);
+  border: 1px solid var(--field-line);
+}
+
+.student-app .route-picker button { color: var(--ink); }
+.student-app .route-picker .route-option[aria-pressed='true'] { color: var(--blue); }
+.student-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .5rem .75rem;
+  margin-block-start: .75rem;
+  border-radius: .625rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.student-app .find-ride-button { width: auto; }
+.student-app .ride-field label { position: relative; display: block; margin-block: .75rem .25rem; }
+.student-app .ride-field input { min-block-size: 3.5rem; padding: 1.375rem .75rem .375rem; }
+.ride-field label span {
+  position: absolute;
+  inset-block-start: .25rem;
+  inset-inline-start: .8rem;
+  color: var(--muted);
+  font-size: .75rem;
+  pointer-events: none;
+  transform-origin: left center;
+  transition: transform 160ms var(--easing);
+}
+.ride-field input:placeholder-shown:not(:focus) + span { transform: translateY(.75rem) scale(1.16); }
+.student-app .ride-field :is(.field-error, input[aria-invalid]) { color: var(--danger); border-color: var(--danger); }
+.field-error { font-size: .875rem; }
+.student-app .ride-dialog { max-block-size: calc(100dvh - 2rem); overflow: auto; }
+.student-app .ride-dialog::backdrop { background: #070c20b8; }
+
+.student-app .times li { align-items: baseline; flex-wrap: wrap; padding: .75rem .5rem; }
+.student-app .times [data-next] { color: var(--blue); background: var(--tint); border-radius: .625rem; font-weight: 650; }
+.student-app .times [data-next] span { color: inherit; }
+
+.student-nav {
+  bottom: max(.5rem, env(safe-area-inset-bottom));
+  z-index: 1;
+  gap: .5rem;
+  margin: 0 max(var(--gutter), env(safe-area-inset-right)) calc(.5rem + env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
+  padding: .375rem;
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow: 0 8px 28px #0f172a24;
+}
+
+.student-nav a {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .125rem;
+  padding: .375rem .125rem;
+  border-radius: .875rem;
+  color: var(--muted);
+  font-size: .75rem;
+  font-weight: 650;
+  line-height: 1rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+.student-nav a[aria-current], .student-nav a:hover { color: var(--blue); background: var(--tint); }
+.student-nav svg { flex: none; }
+.student-app .student-toast { background: var(--ink); color: var(--canvas); }
+.student-app .student-toast.error { background: var(--surface); color: var(--danger); border: 1px solid currentColor; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root:has(.student-app)::view-transition-group(root),
+  :root:has(.student-app)::view-transition-old(root),
+  :root:has(.student-app)::view-transition-new(root) { animation: none; }
+  .student-app :is(button, a, .route-chevron, .ride-field label span) { transition: none; }
+  .student-app :is(button:not(:disabled), .student-link, .student-nav a):active { transform: none; }
+}

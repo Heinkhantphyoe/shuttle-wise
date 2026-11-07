@@ -16,6 +16,14 @@ npm run test:rules
 
 The timetable works with no Firebase settings. Firestore rules tests require Java and a local Firestore emulator download.
 
+To test check-ins and Grab shares locally, install the Firebase CLI and Java, then run:
+
+```powershell
+npm run dev:local
+```
+
+Configure the pickup coordinates in `.env.local`, open the URL printed by Vite, and tap **Allow location & check in**. This command starts Vite with the Auth and Firestore emulators and writes test data locally. To test away from a pickup, use a browser geolocation override with the configured pickup coordinates. Stop it with Ctrl+C.
+
 ## Configure the demo
 
 1. Register a web app in a Firebase Spark project. Enable anonymous and Google sign-in, provision the default Firestore database, and add the Hosting origin as an authorized Auth domain.
@@ -35,7 +43,7 @@ The Worker uses the Firebase ID token to read the caller’s own allowlist entry
 
 ## Verify the deployed demo
 
-Use two phones at each pickup to confirm that check-ins sync, wrong-route and inaccurate locations are rejected, tapping **I got the bus** removes the student from the live queue, and failed ride joins preserve the queue spot. Check an anonymous session and a Google account without an allowlist entry against the dashboard and Worker briefing endpoint. Force failures in each AI provider and verify that computed trend figures stay visible. Track physical and deployment checks in [TODO.md](TODO.md).
+Use two phones at each pickup to confirm that check-ins sync, wrong-route and inaccurate locations are rejected, tapping **I got the bus** removes the student from the live queue, and hosting or joining a ride preserves the original queue spot. Check an anonymous session and a Google account without an allowlist entry against the dashboard and Worker briefing endpoint. Force failures in each AI provider and verify that computed trend figures stay visible. Track physical and deployment checks in [TODO.md](TODO.md).
 
 Students can check in from within 30 metres of the selected pickup with an accurate location reading. The browser checks distance locally, so a modified client can bypass the geofence. Admin trends compare the latest seven Malaysia calendar days, including today, with the previous seven.
 

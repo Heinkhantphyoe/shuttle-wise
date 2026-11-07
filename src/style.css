@@ -43,12 +43,46 @@ button.secondary { background: white; color: #173c7a; border-color: var(--line);
 button:disabled { opacity: .5; cursor: default; }
 button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #87b1ff; outline-offset: 2px; }
 .student button { width: 100%; }
+.student .find-ride-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  width: 10rem;
+  max-width: 100%;
+  margin-inline: auto;
+}
+.find-ride-button svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
 .actions { display: flex; flex-wrap: wrap; gap: .45rem; }
 .actions button { flex: 1 1 115px; }
+.ride-dialog {
+  width: min(24rem, calc(100% - 2rem));
+  padding: 1.15rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  color: inherit;
+  background: white;
+}
+.ride-dialog::backdrop { background: #10213b80; }
 nav { position: sticky; bottom: 0; display: flex; justify-content: space-evenly; gap: .35rem; padding: .5rem .65rem; background: #fff; border-top: 1px solid var(--line); }
 nav button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .2rem; margin: 0; font-size: .9rem; }
 nav button svg { flex: none; }
 nav button[aria-current] { background: #e6efff; border-color: #b4cbf1; }
+.student-toasts { position: absolute; bottom: 100%; inset-inline: .75rem; pointer-events: none; }
+.student-toast {
+  margin: 0 0 .65rem;
+  padding: .75rem 1rem;
+  border-radius: .65rem;
+  background: #10213b;
+  color: white;
+  box-shadow: 0 4px 16px #10213b33;
+  overflow-wrap: anywhere;
+}
+.student-toast.error { background: #8b2635; }
 .times { list-style: none; padding: 0; }
 .times li { display: flex; justify-content: space-between; gap: .5rem; padding: .55rem 0; border-bottom: 1px solid var(--line); }
 .times span { color: var(--muted); }
