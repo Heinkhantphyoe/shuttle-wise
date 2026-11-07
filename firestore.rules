@@ -1,0 +1,137 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function self(uid) { return signedIn() && request.auth.uid == uid; }
+    function admin() {
+      return signedIn() && request.auth.token.firebase.sign_in_provider == 'google.com'
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function routeValid(route) { return route in ['apu', 'lrt']; }
+    function activityPath(uid) { return /databases/$(database)/documents/activity/$(uid); }
+    function ridePath(id) { return /databases/$(database)/documents/rides/$(id); }
+    function historyPath(id) { return /databases/$(database)/documents/history/$(id); }
+    function listingPath(id) { return /databases/$(database)/documents/rideListings/$(id); }
+    function queueBefore(uid, route) {
+      let activity = get(activityPath(uid)).data;
+      return activity.kind == 'queue' && activity.route == route;
+    }
+    function membershipAfter(uid, id, route) {
+      let activity = getAfter(activityPath(uid)).data;
+      return activity.kind == 'ride' && activity.rideId == id && activity.route == route;
+    }
+    function membershipBefore(uid, id) {
+      let activity = get(activityPath(uid)).data;
+      return activity.kind == 'ride' && activity.rideId == id;
+    }
+
+    match /admins/{uid} {
+      allow get: if self(uid) && request.auth.token.firebase.sign_in_provider == 'google.com';
+    }
+
+    match /activity/{uid} {
+      function newCheckIn() {
+        let data = request.resource.data;
+        let event = getAfter(historyPath(data.eventId)).data;
+        return data.keys().hasOnly(['kind', 'route', 'joinedAt', 'eventId'])
+          && data.kind == 'queue' && routeValid(data.route)
+          && data.eventId is string && data.joinedAt == request.time
+          && !exists(historyPath(data.eventId))
+          && event.route == data.route && event.joinedAt == request.time;
+      }
+      function switchToRide() {
+        let data = request.resource.data;
+        let ride = getAfter(ridePath(data.rideId)).data;
+        return resource.data.kind == 'queue'
+          && data.keys().hasOnly(['kind', 'route', 'rideId']) && data.kind == 'ride'
+          && data.route == resource.data.route && ride.route == data.route
+          && ride.status == 'open' && uid in ride.members;
+      }
+      function canLeaveRide() {
+        let ride = getAfter(ridePath(resource.data.rideId)).data;
+        return ride.status != 'open' || !(uid in ride.members);
+      }
+      allow get: if self(uid) || admin();
+      allow list: if signedIn() && resource.data.kind == 'queue';
+      allow create: if self(uid) && newCheckIn();
+      allow update: if self(uid) && (
+        (request.resource.data.kind == 'ride' && switchToRide())
+        || (resource.data.kind == 'ride' && get(ridePath(resource.data.rideId)).data.status != 'open' && newCheckIn())
+      );
+      allow delete: if self(uid) && (resource.data.kind == 'queue' || canLeaveRide());
+    }
+
+    match /history/{id} {
+      function matchesCheckIn(uid) {
+        let activity = getAfter(activityPath(uid)).data;
+        return activity.kind == 'queue' && activity.eventId == id
+          && activity.route == request.resource.data.route && activity.joinedAt == request.time;
+      }
+      allow read: if admin();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['route', 'joinedAt'])
+        && routeValid(request.resource.data.route)
+        && request.resource.data.joinedAt == request.time
+        && matchesCheckIn(request.auth.uid);
+    }
+
+    function matchesListing(listing, ride) {
+      return listing.keys().hasOnly(['route', 'fare', 'status', 'count'])
+        && listing.route == ride.route && listing.fare == ride.fare
+        && listing.status == ride.status && listing.count == ride.members.size();
+    }
+
+    match /rideListings/{id} {
+      function validListing() {
+        let ride = getAfter(ridePath(id)).data;
+        return ride.listed == true && matchesListing(request.resource.data, ride);
+      }
+      allow get: if signedIn() && (!exists(listingPath(id)) || resource.data.status == 'open');
+      allow list: if signedIn() && resource.data.status == 'open';
+      allow create, update: if signedIn() && validListing();
+    }
+
+    match /rides/{id} {
+      function listingSynced() {
+        let ride = request.resource.data;
+        return !ride.get('listed', false) || matchesListing(getAfter(listingPath(id)).data, ride);
+      }
+      function validFare(fare) { return fare is int && fare >= 1 && fare <= 1000000; }
+      function validName(name) { return name is string && name.size() > 0 && name.size() <= 40; }
+      function createRide(uid) {
+        let data = request.resource.data;
+        return data.keys().hasOnly(['route', 'host', 'fare', 'members', 'status', 'listed'])
+          && data.listed == true
+          && routeValid(data.route) && data.host == uid && data.status == 'open'
+          && validFare(data.fare) && data.members.keys().hasOnly([uid]) && validName(data.members[uid])
+          && queueBefore(uid, data.route) && membershipAfter(uid, id, data.route);
+      }
+      function updateMembers(uid) {
+        let before = resource.data;
+        let after = request.resource.data;
+        return after.diff(before).affectedKeys().hasOnly(['members'])
+          && after.members.diff(before.members).affectedKeys().hasOnly([uid])
+          && after.members.size() <= 4
+          && (
+            (before.get('listed', false) && !(uid in before.members) && uid in after.members && validName(after.members[uid])
+              && queueBefore(uid, before.route) && membershipAfter(uid, id, before.route))
+            || (uid != before.host && uid in before.members && !(uid in after.members)
+              && membershipBefore(uid, id) && !existsAfter(activityPath(uid)))
+          );
+      }
+      function updateHost(uid) {
+        let after = request.resource.data;
+        let changes = after.diff(resource.data).affectedKeys();
+        return uid == resource.data.host && membershipBefore(uid, id) && (
+          (changes.hasOnly(['fare']) && validFare(after.fare))
+          || (changes.hasOnly(['status']) && after.status in ['departed', 'cancelled']
+            && !existsAfter(activityPath(uid)))
+        );
+      }
+      allow get: if signedIn() && request.auth.uid in resource.data.members;
+      allow create: if signedIn() && createRide(request.auth.uid) && listingSynced();
+      allow update: if signedIn() && resource.data.status == 'open'
+        && (updateMembers(request.auth.uid) || updateHost(request.auth.uid)) && listingSynced();
+    }
+  }
+}

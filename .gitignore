@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.firebase/
+*-debug.log
+.env*
+!.env.example
+.dev.vars*
+worker/.wrangler/

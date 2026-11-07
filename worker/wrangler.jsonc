@@ -1,0 +1,14 @@
+{
+  "name": "shuttlewise-ai",
+  "main": "index.ts",
+  "compatibility_date": "2025-09-01",
+  "vars": {
+    "APP_ORIGIN": "",
+    "FIREBASE_PROJECT_ID": ""
+  },
+  "ratelimits": [{
+    "name": "UID_RATE_LIMIT",
+    "namespace_id": "1001",
+    "simple": { "limit": 6, "period": 60 }
+  }]
+}

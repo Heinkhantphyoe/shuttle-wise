@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ShuttleWise · Student design preview</title>
+<link rel="stylesheet" href="./src/route-picker.css">
+<style>
+
+:root{--ink:#0c1424;--blue:#155eef;--muted:#596579;--line:#e5e9f0;--canvas:#edf0f5;--surface:#f7f8fb;--white:#fff;--radius:18px}
+*{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;-webkit-font-smoothing:antialiased}button,input,select{font:inherit}button,select{cursor:pointer}button,a,input,select,summary{-webkit-tap-highlight-color:transparent}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #9bbcff;outline-offset:3px}button{width:100%;min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 12px;padding:12px 16px;border:1px solid transparent;border-radius:12px;background:var(--blue);color:white;font-weight:650;line-height:1.4;transition:background .15s}button:hover{background:#0d4fdb}button:active{transform:translateY(1px)}button.secondary{background:white;border-color:#dce2ec;color:var(--ink)}button.secondary:hover{background:#f3f6fb}.phone{position:relative;display:flex;flex-direction:column;width:100%;max-width:430px;height:100dvh;overflow:hidden;background:var(--surface);margin:auto}.brand{display:flex;align-items:center;gap:11px;flex:none;height:80px;padding:18px 20px;background:var(--ink);color:white}.logo{display:grid;place-items:center;flex:none;width:38px;height:38px;background:var(--blue);border-radius:11px}.logo svg{width:24px;height:24px}.brand strong{font-size:18px;letter-spacing:-.5px;font-weight:750}.brand small{display:block;font-size:11px;letter-spacing:.2px;color:#b7c3d8;margin-top:1px}.content{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:25px 20px 24px;scrollbar-width:thin}.page-heading{margin-bottom:22px}.eyebrow{display:block;margin-bottom:6px;color:#64748b;font-size:10px;letter-spacing:1.4px;font-weight:750}h1{font-size:27px;line-height:1.2;letter-spacing:-1px;font-weight:750;margin:0}h1:focus{outline:none}.page-subtitle{font-size:13px;color:var(--muted);margin-top:8px}h2{font-size:16px;line-height:1.4;letter-spacing:-.25px;margin:0 0 8px;font-weight:700}p{white-space:pre-line;margin:0;color:var(--muted);font-size:14px;line-height:1.6}.card{padding:20px;border:1px solid var(--line);border-radius:var(--radius);background:white;margin-bottom:16px;box-shadow:0 2px 4px #0c142403}.card button{margin:18px 0 0}.card p{font-size:13px}.hero{position:relative;border-radius:var(--radius);background:var(--ink);padding:23px 22px;margin-bottom:16px;color:white;overflow:hidden}.hero:before{content:"";position:absolute;left:0;top:24px;width:3px;height:34px;border-radius:0 3px 3px 0;background:#4c8dff}.hero .label{font-size:12px;color:#c1cce0;font-weight:550;display:flex;align-items:center;gap:8px}.hero .value{font-size:43px;line-height:1.15;font-weight:700;letter-spacing:-1.8px;margin:15px 0 12px;font-variant-numeric:tabular-nums}.hero p{font-size:12px;color:#bdcbe3}.time-badge{display:inline-flex;align-items:center;gap:6px;color:#e4eeff;background:#1a2d50;border:1px solid #2c4268;border-radius:7px;padding:5px 9px;margin-right:7px;font-size:11px;font-weight:650}.hero-foot{display:flex;align-items:center;flex-wrap:wrap;gap:6px}.hero-foot small{font-size:11px;color:#b2bfd6}.icon{height:20px;width:20px;display:inline-block;flex:none;vertical-align:middle}.route-context{display:flex;align-items:center;gap:7px;margin-bottom:20px;font-size:12px;color:var(--muted)}.route-context .icon{width:16px;height:16px;color:var(--blue)}.ride-tabs{display:flex;gap:22px;border-bottom:1px solid #dfe5ef;margin:-3px 0 22px}.ride-tabs button,.ride-tabs button.secondary{position:relative;flex:1;min-width:0;padding:12px 0 15px;margin:0;border:0;border-radius:0;background:transparent;color:#707b8d;font-size:14px;font-weight:600;box-shadow:none}.ride-tabs button.active{color:var(--blue)}.ride-tabs button.active:after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:3px;border-radius:3px 3px 0 0;background:var(--blue)}.text{margin-bottom:18px}.note{display:flex;gap:7px;align-items:flex-start;color:#6b7689;font-size:11px;line-height:1.65;margin:14px 2px 20px}.note .icon{width:14px;height:14px;margin-top:2px;color:#8190a5}.host-row{display:flex;gap:11px;align-items:center;margin-bottom:18px}.avatar{display:grid;place-items:center;width:42px;height:42px;flex:none;background:#eaf1ff;color:#2455a1;border-radius:50%;font-size:15px;font-weight:700}.host-identity{flex:1;min-width:0}.host-identity h2{margin:0 0 2px}.host-identity p{font-size:11px}.availability{font-size:10px;font-weight:650;color:#0d704f;background:#eaf7f0;padding:4px 7px;border-radius:5px;white-space:nowrap}.trip-path{display:flex;gap:7px;align-items:center;color:#6b7689;font-size:12px;padding:0 0 16px;border-bottom:1px solid #eef1f5}.trip-path .icon{width:15px;height:15px;color:#7a90b2}.fare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-top:17px}.fare-grid small{display:block;font-size:10px;color:#6b7689;margin-bottom:3px}.fare-grid strong{display:block;font-size:20px;font-weight:700;letter-spacing:-.6px;font-variant-numeric:tabular-nums}.fare-grid .share{color:var(--blue)}.fare-grid strong span{font-size:10px;font-weight:500;letter-spacing:0;color:#768297}.ride-card>button{margin-top:18px}.section-label{font-size:10px;font-weight:750;color:#6b7689;letter-spacing:1px;margin:0 0 12px}.crew-row{display:flex;gap:11px;align-items:center;padding:12px 0;border-bottom:1px solid #edf0f5}.crew-row:last-child{border-bottom:0;padding-bottom:0}.crew-row .avatar{width:35px;height:35px;font-size:12px;background:#f0f3f8;color:#4f617c}.crew-row strong{display:block;font-size:13px;font-weight:600}.crew-row small{display:block;font-size:10px;color:#788497}.crew-meta{flex:1}.crew-row .you{font-size:10px;color:var(--blue);background:#edf3ff;border-radius:5px;padding:3px 7px}.form-panel{padding:20px;background:white;border:1px solid var(--line);border-radius:var(--radius);margin-bottom:16px}.form-panel label{display:block;margin-bottom:20px;color:#4b586e;font-size:12px;font-weight:600}.form-panel label:last-child{margin-bottom:0}input{width:100%;display:block;min-height:48px;padding:12px 13px;border:1px solid #dce2ec;border-radius:9px;background:#fbfcfe;color:var(--ink);font-size:15px;margin-top:8px;outline:none}.times{background:white;border:1px solid var(--line);border-radius:var(--radius);padding:0 18px;margin-bottom:16px}.time{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:68px;border-bottom:1px solid #edf0f5}.time:last-child{border:0}.time strong{font-size:20px;font-weight:650;letter-spacing:-.5px;font-variant-numeric:tabular-nums}.time span{color:#8490a2;font-size:11px}.time.next strong{color:var(--blue)}.time.next span{background:#edf3ff;padding:4px 9px;border-radius:5px;color:var(--blue);font-weight:600}.time.past strong{color:#8e98a8}.schedule-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:12px;font-weight:650}.schedule-meta small{font-size:10px;color:#7c8799;font-weight:400}.confirm,.price-alert{padding:18px;background:#fff9ed;border:1px solid #edd8ae;border-radius:14px;margin-bottom:18px}.confirm p{margin-bottom:16px}.price-alert h2{display:flex;align-items:center;gap:7px;color:#755009}.price-alert h2 .icon{width:18px;height:18px}.price-alert p{color:#775f39}.price-alert button{margin:14px 0 0}.price-alert button.secondary{margin-top:8px}.toast{position:absolute;bottom:88px;left:18px;right:18px;padding:15px 16px;border:1px solid #19694f;border-radius:12px;background:#125d47;color:white;font-size:13px;font-weight:550;z-index:20;box-shadow:0 8px 30px #0c14242a}.toast:empty,.error:empty{display:none}.error{font-size:12px;padding:12px;background:#fff1f0;border-radius:10px;color:#b42318;margin-bottom:16px}.status-visual{display:grid;place-items:center;width:48px;height:48px;background:#edf3ff;color:var(--blue);border-radius:14px;margin-bottom:17px}.status-visual .icon{width:25px;height:25px}nav{display:flex;flex:none;gap:6px;min-height:76px;padding:8px 12px max(8px,env(safe-area-inset-bottom));background:white;border-top:1px solid var(--line)}nav button{flex:1;min-height:56px;min-width:0;flex-direction:column;gap:5px;margin:0;padding:7px 4px;border:0;border-radius:12px;background:transparent;color:#778397;font-size:10px;font-weight:600}nav button:hover{background:#f4f7fc}nav button.active{color:var(--blue);background:#edf3ff}nav svg{width:21px;height:21px;flex:none}.review{position:fixed;left:22px;top:24px;z-index:30;width:220px;color:#66748a;font-size:12px}.review summary{list-style:none;width:max-content;padding:8px 12px;background:white;border:1px solid #dce3ed;border-radius:9px;font-size:11px;font-weight:650;cursor:pointer}.review details[open]{padding:12px;border:1px solid #dce3ed;background:white;border-radius:12px;box-shadow:0 8px 30px #0c142415}.review details[open] summary{margin-bottom:12px;border:0;padding:0;color:var(--blue)}.review strong{font-size:12px}.review select{width:100%;margin:9px 0;padding:9px;border:1px solid var(--line);border-radius:7px;color:var(--ink);background:white;font-size:12px}.review button{font-size:11px;min-height:40px;margin:5px 0 12px}.review p{font-size:11px;line-height:1.6;margin-top:10px}
+@media(min-width:768px){.phone{height:calc(100dvh - 48px);max-height:900px;margin:24px auto;border:1px solid #d8dfe9;border-radius:24px;box-shadow:0 18px 60px #1b315517}}
+@media(max-width:1000px){.review{left:auto;right:12px;top:21px;width:auto;max-width:220px}.review summary{margin-left:auto;font-size:10px;padding:5px 9px;background:#19253a;border-color:#344158;color:#ced9ed}.review details[open]{width:220px}.review details[open] summary{margin-left:0;background:white}}
+@media(max-width:359px){.content{padding:22px 16px}.brand{padding-left:16px}.hero .value{font-size:38px}.host-row{gap:8px}.availability{font-size:9px}.fare-grid strong{font-size:18px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.group-status{display:flex;align-items:center;gap:12px;padding:17px 18px;border:1px solid var(--line);border-radius:16px;background:white;margin-bottom:16px}.group-status .status-visual{width:38px;height:38px;margin:0;border-radius:10px}.group-status strong{font-size:17px;letter-spacing:-.4px}.group-status p{font-size:11px}.group-status .availability{margin-left:auto}.price-header{display:flex;align-items:center;justify-content:space-between;gap:12px}.price-header h2{font-size:20px;letter-spacing:-.6px;margin:0}.price-header button{width:auto;flex:none;margin:0;padding:10px 13px;font-size:12px}.price-summary{margin-top:8px!important}.content>button[data-command="cancel"],.content>button[data-command="leave"],.content>button[data-command="leaveQueue"]{border:0;background:transparent;color:#796467}.content>button[data-command="cancel"]:hover,.content>button[data-command="leave"]:hover,.content>button[data-command="leaveQueue"]:hover{background:#f0f2f6}input::-webkit-inner-spin-button,input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+dialog.queue-dialog{width:calc(100% - 40px);max-width:350px;padding:24px;border:1px solid var(--line);border-radius:20px;background:white;color:var(--ink);box-shadow:0 20px 70px #0c142440}dialog.queue-dialog::backdrop{background:#0c142475;backdrop-filter:blur(3px)}.queue-dialog h2{font-size:21px;letter-spacing:-.6px;line-height:1.3;margin-bottom:12px}.queue-dialog p{font-size:13px;margin-bottom:22px}.queue-dialog button{margin-bottom:10px}.queue-dialog button:last-child{margin-bottom:0}
+</style>
+<aside class="review"><details><summary>Demo</summary><strong>Student design preview</strong><select id="states" aria-label="Preview state"></select><button class="secondary" id="simulate-price">Preview a host price change</button><p>Use the button above while viewing a joined group to preview a price change. Demo only; no live backend.</p><p>Sample clock: 2:00 PM. Bus times are examples. Location and live events are simulated.</p></details></aside>
+<main class="phone"><header class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="15" rx="3"/><path d="M5 11h14M8 14h1m6 0h1M8 18v3m8-3v3M9 6h6"/></svg></span><div><strong>ShuttleWise</strong><small>APU campus shuttle</small></div></header><section class="content" id="content"></section><nav id="nav"></nav><dialog id="leave-waiting-dialog" class="queue-dialog" aria-labelledby="leave-waiting-title" aria-describedby="leave-waiting-message"><div class="status-visual" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 8v5l3 2 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0"/></svg></div><h2 id="leave-waiting-title">Leave the shuttle waiting queue?</h2><p id="leave-waiting-message">To join this Grab, leave the shuttle waiting queue first. Your shuttle check-in will end.</p><button data-command="leaveAndJoin">Leave queue &amp; join ride</button><button class="secondary" data-command="keepWaiting" autofocus>Keep waiting</button></dialog><dialog id="leave-ride-dialog" class="queue-dialog" aria-labelledby="leave-ride-title" aria-describedby="leave-ride-message"><div class="status-visual" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 8v5l3 2 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0"/></svg></div><h2 id="leave-ride-title">Leave your Grab group?</h2><p id="leave-ride-message">Leave this ride before joining the shuttle waiting queue. Then confirm you are at the pickup point to check in.</p><button id="leave-ride-continue" data-command="leaveRideToWait">Leave ride &amp; continue</button><button class="secondary" data-command="keepRideToWait" autofocus>Stay in ride</button></dialog></main>
+<!-- Self-contained student preview: edit this HTML only. -->
+<script>
+const MODEL = {
+  home:{title:'Your next shuttle',tab:'home',blocks:[
+    {type:'hero',label:'{{route}}',value:'{{next}}',text:'{{countdown}} · Scheduled departure'},
+    {type:'card',title:'Waiting at the stop?',text:'{{count}} students checked in at {{origin}}.',buttons:[['I am waiting','location']]},
+    {type:'card',title:'Share a Grab to {{destination}}',text:'Find a ride with up to 4 people.',buttons:[['Find a ride','rides','secondary']]}
+  ]},
+  timetable:{title:'Bus timetable',tab:'timetable',blocks:[
+    {type:'text',text:'{{route}}\nToday · Friday'},
+    {type:'times',rows:[['3:30 PM','Next shuttle'],['4:00 PM','Upcoming'],['4:30 PM','Upcoming'],['5:00 PM','Last shuttle']]},
+    {type:'note',text:'Example timetable. Actual APU times\nwill be added before launch.'},
+    {type:'button',label:'View service notice',to:'notice',kind:'secondary'}
+  ]},
+  location:{title:'Check in at the stop',tab:'home',blocks:[
+    {type:'card',title:'Allow location access',text:'We check that you are near\nthe {{origin}} pickup point.\nYour location stays private.'},
+    {type:'button',label:'Allow location & check in',to:'queue'},
+    {type:'button',label:'Not now',to:'home',kind:'secondary'},
+    {type:'note',text:'Bus times work without location access.'}
+  ]},
+  blocked:{title:'Location not confirmed',tab:'home',blocks:[
+    {type:'card',title:'Please try again',text:'Move closer to the pickup point\nand allow location in your browser.\nYou have not been checked in.'},
+    {type:'button',label:'Try again',to:'location'},
+    {type:'button',label:'View bus times',to:'timetable',kind:'secondary'}
+  ]},
+  queue:{title:'You’re checked in',tab:'home',blocks:[
+    {type:'hero',label:'Next bus from {{origin}}',value:'{{next}}',text:'{{countdown}} · Scheduled departure'},
+    {type:'card',title:'{{elapsed}}',text:'{{count}} students checked in at {{origin}}.\nThis is the app count, not your queue position.'},
+    {type:'card',title:'Alex is sharing a Grab',text:'To {{destination}} · 2 spaces left',buttons:[['View ride','details','secondary']]},
+    {type:'button',label:'I boarded',to:'home'},
+    {type:'button',label:'Leave queue',to:'home',kind:'secondary'}
+  ]},
+  rides:{title:'Find rides',tab:'rides',blocks:[
+    {type:'text',text:'{{route}}'},
+        {type:'card',title:'Alex’s ride',text:'2 of 4 people · 2 spaces left\nTotal fare: RM {{fare}}',buttons:[['View ride','details','secondary']]},
+    {type:'note',text:'Check in at the stop to host or join.\nGrab booking and payment are separate.'}
+  ]},
+  host:{title:'Host a ride',tab:'rides',blocks:[
+    {type:'text',text:'{{route}}'},
+    {type:'field',label:'Your name',value:'Alex',id:'hostName'},
+    {type:'field',label:'Phone number · private',value:'012 345 6789',id:'hostPhone'},
+    {type:'field',label:'Total Grab fare (RM)',value:'8.00',id:'createFare'},
+    {type:'note',text:'Up to 4 people, including you.\nEnter the fare quoted in your Grab app.\nYour phone is not shown publicly.'},
+    {type:'button',label:'Create ride',to:'manage'}
+  ]},
+  manage:{title:'Your ride',tab:'rides',blocks:[
+    {type:'hero',label:'{{route}}',value:'{{members}} / 4 people',text:'Waiting for others to join'},
+    {type:'card',title:'Total fare · RM {{fare}}',text:'{{crew}}\nEstimated share: RM {{share}} each',buttons:[['Edit fare','edit','secondary']]},
+    {type:'button',label:'We have departed',to:'done'},
+    {type:'button',label:'Cancel ride',to:'rides',kind:'secondary'},
+    {type:'note',text:'Keep this tab to manage your ride.'}
+  ]},
+  edit:{title:'Edit price',tab:'rides',blocks:[
+    {type:'field',label:'New total fare (RM)',value:'{{fare}}',id:'editFare'},
+    {type:'text',text:'Your crew will see the new fare\nand can choose to leave.'},
+    {type:'button',label:'Save price',to:'manage'},
+    {type:'button',label:'Cancel',to:'manage',kind:'secondary'}
+  ]},
+  details:{title:'Join Alex’s ride',tab:'rides',blocks:[
+    {type:'card',title:'{{route}}',text:'2 of 4 people · 2 spaces left\nTotal fare: RM {{fare}}\nAfter you join: about RM {{joinShare}} each'},
+    {type:'field',label:'Your name',value:'Sam',id:'joinName'},
+    {type:'button',label:'Join ride',to:'joined'},
+    {type:'note',text:'Meet at the shuttle pickup point.\nNo payment is collected here.'}
+  ]},
+  joined:{title:'Your group',tab:'rides',blocks:[
+    {type:'hero',label:'Your estimated share',value:'RM {{share}}',text:'RM {{fare}} total · {{members}} people'},
+    {type:'card',title:'Your crew to {{destination}}',text:'{{crew}}'},
+    {type:'note',text:'Meet at the shuttle pickup point.\nYour share changes if the fare or\nnumber of people changes.'},
+    {type:'button',label:'Leave ride',to:'rides',kind:'secondary'}
+  ]},
+  fare:{title:'Fare updated',tab:'rides',blocks:[
+    {type:'card',title:'Alex changed the fare',text:'Total: RM {{oldFare}} → RM {{fare}}\nYour new share: RM {{share}} each'},
+    {type:'button',label:'Stay in ride',to:'updated'},
+    {type:'button',label:'Leave ride',to:'rides',kind:'secondary'}
+  ]},
+  updated:{title:'Your ride to {{destination}}',tab:'rides',blocks:[
+    {type:'hero',label:'Updated estimated share',value:'RM {{share}}',text:'RM {{fare}} total · {{members}} people'},
+    {type:'card',title:'Your crew',text:'{{crew}}'},
+    {type:'button',label:'Leave ride',to:'rides',kind:'secondary'}
+  ]},
+  full:{title:'This ride is full',tab:'rides',blocks:[
+    {type:'card',title:'All 4 places are taken',text:'You have not been added.\nFind another ride or host your own.'},
+    {type:'button',label:'Find another ride',to:'rides'},
+    {type:'button',label:'Host a ride',to:'host',kind:'secondary'}
+  ]},
+  notice:{title:'Service notice',tab:'timetable',blocks:[
+    {type:'card',title:'No more buses today',text:'There are no remaining departures\nfor this example service day.'},
+    {type:'button',label:'Find a Grab share',to:'rides'},
+    {type:'button',label:'Back to timetable',to:'timetable',kind:'secondary'}
+  ]},
+  done:{title:'Have a good trip',tab:'rides',blocks:[
+    {type:'card',title:'Ride closed',text:'Your ride is marked as departed.\nYour queue check-in has ended.'},
+    {type:'button',label:'Back to home',to:'home'}
+  ]}
+};
+
+// Host save result is the same management page with a temporary success toast.
+MODEL.hostsaved={...MODEL.manage,blocks:[...MODEL.manage.blocks,{type:'toast',text:'Price changed successfully.'}]};
+
+// Illustrative schedules, not official APU times. All preview examples use 2:00 PM.
+const ROUTES = {
+  LRT_TO_APU:{label:'LRT → APU',route:'Bukit Jalil LRT → APU',origin:'Bukit Jalil LRT',destination:'APU',departures:[930,960,990,1020],count:24},
+  APU_TO_LRT:{label:'APU → LRT',route:'APU → Bukit Jalil LRT',origin:'APU',destination:'Bukit Jalil LRT',departures:[870,900,930,960],count:12}
+};
+function formatDeparture(minutes){const hours=Math.floor(minutes/60);return `${hours%12||12}:${String(minutes%60).padStart(2,'0')} ${hours>=12?'PM':'AM'}`;}
+function nextDeparture(routeId,nowMinutes=840){return ROUTES[routeId].departures.find(t=>t>=nowMinutes)??null;}
+function screenModel(key,routeId,options={}){
+  const route=ROUTES[routeId],now=options.nowMinutes??840,next=nextDeparture(routeId,now);
+  const minutes=options.elapsedMinutes??8;
+  const fare=options.fare??(key==='hostsaved'?12:8),members=options.members??(['manage','hostsaved'].includes(key)?1:3);
+  const values={...route,fare:fare.toFixed(2),oldFare:(options.oldFare??8).toFixed(2),members,share:(fare/members).toFixed(2),joinShare:(fare/3).toFixed(2),crew:options.crew??(['manage','hostsaved'].includes(key)?'Alex · Host (you)':'Alex · Host\nMei · Joined\nSam · You'),next:next===null?'No more buses':formatDeparture(next),countdown:next===null?'No scheduled departure today':next===now?'Scheduled now':`In ${next-now} minutes`,elapsed:minutes<1?'You just checked in':`You checked in ${minutes} minute${minutes===1?'':'s'} ago`};
+  const replace=value=>typeof value==='string'?value.replace(/\{\{(\w+)\}\}/g,(_,k)=>values[k]??''):Array.isArray(value)?value.map(replace):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,replace(v)])):value;
+  const result=replace(MODEL[key]);
+  if(key==='timetable')result.blocks.find(b=>b.type==='times').rows=route.departures.map(t=>[formatDeparture(t),t<now?'Departed':t===next?'Next shuttle':'Upcoming']);
+  return result;
+}
+
+</script>
+<script>
+// Local prototype state. Shared storage simulates fare updates between preview tabs.
+// Production still needs authenticated, transactional Firebase operations.
+const icons={home:'M3 10 12 3l9 7v11h-6v-7H9v7H3z',timetable:'M4 5h16v16H4z M4 10h16 M8 2v6 M16 2v6',rides:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M20 21v-2'};
+const safe=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
+const commands={'Save price':'save','Create ride':'create','Join ride':'join','Stay in ride':'stay','Leave ride':'leave','Cancel ride':'cancel','I boarded':'board','Leave queue':'leaveQueue'};
+const button=(label,to,kind='')=>`<button class="${kind}" ${commands[label]?`data-command="${commands[label]}"`:`data-to="${to}"`}>${safe(label)}</button>`;
+let selectedRoute='LRT_TO_APU',currentScreen='home',checkedIn=null,activeRide=null,pendingAction=null,pendingRoute=null,acceptedFare=null,toastTimer,pendingJoin=null,pendingWait=null;
+let myName='Sam',hostName='Alex';
+const records={},rideRecords={},selectedRideIds={};
+function rideKey(id){return 'shuttlewise-demo-'+selectedRoute+(id==='main'?'':':'+id);}
+function rideIds(){let own=[];try{own=JSON.parse(localStorage.getItem('shuttlewise-rides-'+selectedRoute))||[];}catch{}return [...new Set(['main','nina','daniel',...(Array.isArray(own)?own.filter(x=>typeof x==='string'):[])])];}
+function recordFor(id){
+ const cacheKey=selectedRoute+':'+id;
+ if(!rideRecords[cacheKey]){
+  let saved;try{saved=JSON.parse(localStorage.getItem(rideKey(id)));}catch{}
+  const examples={main:{fare:8,names:['Alex','Mei'],status:'open'},nina:{fare:12,names:['Nina'],status:'open'},daniel:{fare:9,names:['Daniel','Kai'],status:'open'}};
+  rideRecords[cacheKey]=saved&&Number.isFinite(saved.fare)&&saved.fare>0&&Array.isArray(saved.names)&&saved.names.length>0?saved:examples[id]||{fare:8,names:['Host'],status:'cancelled'};
+ }
+ return rideRecords[cacheKey];
+}
+function record(){return records[selectedRoute]=recordFor(selectedRideIds[selectedRoute]||'main');}
+function storeRecord(){try{localStorage.setItem(rideKey(selectedRideIds[selectedRoute]||'main'),JSON.stringify(record()));}catch{} }
+function selectRide(id){if(activeRide)return;selectedRideIds[selectedRoute]=id;delete records[selectedRoute];}
+function createOwnRide(fare,name){
+ const id='own-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
+ const ids=rideIds();selectedRideIds[selectedRoute]=id;
+ rideRecords[selectedRoute+':'+id]={fare,names:[name],status:'open'};
+ try{localStorage.setItem('shuttlewise-rides-'+selectedRoute,JSON.stringify([...ids,id]));}catch{}
+ storeRecord();
+}
+function money(value){return Number(value).toFixed(2);}
+function isMember(){return activeRide==='joined'||activeRide==='updated';}
+function showToast(message){
+ let node=document.querySelector('#toast');if(!node){node=document.createElement('div');node.id='toast';node.className='toast';node.setAttribute('role','status');node.setAttribute('aria-live','polite');document.querySelector('.phone').appendChild(node);}
+ node.textContent=message;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{node.textContent='';},3500);
+}
+const uiPaths={car:'M5 17H3v-6l2-6h14l2 6v6h-2 M5 17h14 M5 17v3 M19 17v3 M3 11h18 M7 14h1 M16 14h1',pin:'M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0z M15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0',arrow:'M4 12h16 M14 6l6 6-6 6',chevron:'m6 9 6 6 6-6',clock:'M12 8v5l3 2 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',info:'M12 11v6 M12 7h.01 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',check:'m5 12 4 4L19 6',bus:'M5 10h14 M8 14h1m6 0h1M8 18v3m8-3v3 M5 5v11q0 2 2 2h10q2 0 2-2V5q0-2-2-2H7Q5 3 5 5z'};
+function uiIcon(key){return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${uiPaths[key]||uiPaths.info}"/></svg>`;}
+function crewMarkup(){return `<div class="card"><div class="section-label">YOUR CREW</div>${record().names.map((name,index)=>{const you=activeRide==='manage'?name===hostName:name===myName;return `<div class="crew-row"><span class="avatar" aria-hidden="true">${safe(name.slice(0,1).toUpperCase())}</span><div class="crew-meta"><strong>${safe(name)}</strong><small>${index===0?'Host':'Joined'}</small></div>${you?'<span class="you">You</span>':''}</div>`;}).join('')}</div>`;}
+function renderBlock(b){
+ if(b.type==='hero'){
+   if(currentScreen==='manage')return `<div class="group-status"><span class="status-visual">${uiIcon('car')}</span><div><strong>${record().names.length} of 4 people</strong><p>${record().names.length>=4?'Your group is full':'Waiting for others to join'}</p></div><span class="availability">${record().names.length>=4?'Full':'Open'}</span></div>`;
+   const departure=['home','queue'].includes(currentScreen);
+   const foot=departure?`<div class="hero-foot"><span class="time-badge">${uiIcon('clock')}${safe(b.text.split(' · ')[0])}</span><small>Scheduled departure</small></div>`:`<p>${safe(b.text)}</p>`;
+   return `<div class="hero"><div class="label">${uiIcon(departure?'bus':isMember()?'info':'check')}${safe(departure?'Next bus from '+ROUTES[selectedRoute].origin:b.label)}</div><div class="value">${safe(b.value)}</div>${foot}</div>`;
+ }
+ if(b.kind==='ride'){
+   const r=b.rideId?recordFor(b.rideId):record(),count=r.names.length;
+   return `<article class="card ride-card"><div class="host-row"><span class="avatar" aria-hidden="true">${safe(r.names[0].slice(0,1))}</span><div class="host-identity"><h2>${safe(b.title)}</h2><p>${count} of 4 people</p></div><span class="availability">${4-count} spaces left</span></div><div class="trip-path">${uiIcon('pin')}<span>${safe(ROUTES[selectedRoute].origin)}</span>${uiIcon('arrow')}<span>${safe(ROUTES[selectedRoute].destination)}</span></div><div class="fare-grid"><div><small>Total fare</small><strong>RM ${money(r.fare)}</strong></div><div><small>After you join · estimate</small><strong class="share">RM ${money(r.fare/(count+1))}<span> / person</span></strong></div></div>${button('View ride','details').replace('data-to="details"','data-ride="'+safe(b.rideId||'main')+'"')}</article>`;
+ }
+ if(b.kind==='crew')return crewMarkup();
+ if(b.type==='results')return `<div class="schedule-meta"><span>${safe(b.text)}</span><small>To ${safe(ROUTES[selectedRoute].destination)}</small></div>`;
+ if(b.kind==='fareSummary')return `<div class="card"><div class="section-label">RIDE PRICE</div><div class="price-header"><h2>RM ${money(record().fare)}</h2>${button('Edit price','edit','secondary')}</div><p class="price-summary">Total fare · Estimated RM ${money(record().fare/(record().names.length||1))} each</p></div>`;
+ if(b.type==='card'){
+   const icon=['location','blocked','full','done','notice'].includes(currentScreen)?`<div class="status-visual">${uiIcon(currentScreen==='location'?'pin':currentScreen==='done'?'check':'info')}</div>`:'';
+   return `<div class="card">${icon}<h2>${safe(b.title)}</h2><p>${safe(b.text||'')}</p>${(b.buttons||[]).map(x=>button(...x)).join('')}</div>`;
+ }
+ if(b.type==='button')return button(b.label,b.to,b.kind);
+ if(b.type==='field')return `<label>${safe(b.label)}<input id="${b.id||'field'}" value="${safe(b.value)}" ${/Fare$/i.test(b.id||'')?'type="number" min="0.01" step="0.01" inputmode="decimal"':''}></label>`;
+ if(b.type==='times')return `<div class="schedule-meta"><span>Today · Friday</span><small>Departure times</small></div><div class="times">${b.rows.map(r=>`<div class="time ${r[1]==='Next shuttle'?'next':r[1]==='Departed'?'past':''}"><strong>${r[0]}</strong><span>${r[1]}</span></div>`).join('')}</div>`;
+ return `<p class="${b.type}">${b.type==='note'?uiIcon('info'):''}${safe(b.text)}</p>`;
+}
+function renderBlocks(blocks){let markup='';for(let i=0;i<blocks.length;i++){if(blocks[i].type==='field'){markup+='<div class="form-panel">';do{markup+=renderBlock(blocks[i]);i++;}while(i<blocks.length&&blocks[i].type==='field');markup+='</div>';i--;}else markup+=renderBlock(blocks[i]);}return markup;}
+function render(key){
+ // Visiting Share a Grab never silently leaves an existing group.
+ if(activeRide&&['rides','host','details','location','queue'].includes(key))key=activeRide;
+ if(key==='fare'&&activeRide==='manage')key='manage';
+ currentScreen=key;
+ const r=record(),memberCount=r.names.length||1;
+ const elapsed=checkedIn?Math.max(0,Math.floor((Date.now()-checkedIn.at)/60000)):8;
+ const crew=r.names.map((n,i)=>`${n} · ${i===0?'Host':'Joined'}${(activeRide==='manage'?n===hostName:n===myName)?' (you)':''}`).join('\n');
+ const m=screenModel(key,selectedRoute,{elapsedMinutes:elapsed,fare:r.fare,oldFare:acceptedFare??8,members:memberCount,crew});
+ if(key==='rides'){
+   const open=rideIds().filter(id=>{const ride=recordFor(id);return ride.status==='open'&&ride.names.length<4;});
+   const entries=open.map(id=>({type:'card',kind:'ride',rideId:id,title:recordFor(id).names[0]+'’s ride'}));
+   const index=m.blocks.findIndex(b=>b.type==='card');
+   m.blocks.splice(index,1,...(entries.length?[{type:'results',text:entries.length+' ride'+(entries.length===1?'':'s')+' available'},...entries]:[{type:'card',title:'No open rides',text:'You can host a new ride on this route.'}]));
+ }
+ if(key==='details'){m.title=`Join ${r.names[0]}’s ride`;m.blocks[0].text=`${memberCount} of 4 people · ${4-memberCount} spaces left\nTotal fare: RM ${money(r.fare)}\nAfter you join: about RM ${money(r.fare/(memberCount+1))} each`;}
+ if(key==='home'&&checkedIn?.route===selectedRoute){const b=m.blocks.find(b=>b.type==='card');b.title='You are checked in';b.buttons=[['View my check-in','queue']];}
+ if(key==='home'&&activeRide){const queueCard=m.blocks.find(b=>b.type==='card');queueCard.title='You are in a Grab group';queueCard.text='Leave your ride before checking in for the shuttle.';queueCard.buttons=[['Leave ride to wait','location','secondary']];const b=m.blocks[m.blocks.length-1];b.title='Your Grab group';b.text='View your group, fare and crew.';b.buttons=[['View my group',activeRide,'secondary']];}
+ const changed=isMember()&&acceptedFare!==null&&acceptedFare!==r.fare;
+ // A changed fare is shown in the member's full group page, not on the host screen.
+ const alert=changed&&['joined','updated','fare'].includes(key)?`<div class="card price-alert" role="alert"><h2>${uiIcon('info')}Price changed</h2><p>Total: RM ${money(acceptedFare)} → RM ${money(r.fare)}\nYour new share: RM ${money(r.fare/memberCount)} each</p>${button('Stay in ride','joined')}${button('Leave ride','rides','secondary')}</div>`:'';
+ if(key==='fare'){m.title='Your group';m.blocks=screenModel('joined',selectedRoute,{fare:r.fare,members:memberCount,crew}).blocks;}
+ if(changed&&['joined','updated','fare'].includes(key))m.blocks=m.blocks.filter(b=>!(b.type==='button'&&b.label==='Leave ride'));
+ if(key==='manage')m.blocks[0].text=memberCount>=4?'Your group is full':'Waiting for others to join';
+ if(['rides','host','timetable'].includes(key))m.blocks=m.blocks.filter(b=>b.type!=='text'||!b.text.includes(ROUTES[selectedRoute].route));
+ if(['joined','updated','fare'].includes(key)){const crew=m.blocks.find(b=>b.type==='card'&&b.title.includes('crew'));if(crew)crew.kind='crew';}
+ if(['joined','updated'].includes(key)){const note=m.blocks.find(b=>b.type==='note');if(note)note.text='Meet at the '+ROUTES[selectedRoute].origin+' pickup point.\nYour share may change with the fare or crew.';}
+ if(key==='manage'){m.blocks[1].kind='fareSummary';m.blocks.splice(2,0,{type:'card',kind:'crew'});}
+ document.querySelector('#states').value=key;
+ const selector=!activeRide&&['home','timetable','rides'].includes(key)?`<div class="route-picker">
+   <button type="button" class="route-trigger" aria-expanded="false" aria-controls="preview-route-options">
+     <span class="route-pin">${uiIcon('pin')}</span>
+     <span class="route-copy"><small>Your route</small><strong>${safe(ROUTES[selectedRoute].route)}</strong></span>
+     <span class="route-chevron">${uiIcon('chevron')}</span>
+   </button>
+   <div class="route-options" id="preview-route-options" role="group" aria-label="Choose your route" hidden>
+     ${Object.entries(ROUTES).map(([id,route])=>`<button type="button" class="route-option" data-route="${id}" aria-pressed="${selectedRoute===id}"><span class="route-copy">${safe(route.route)}</span>${selectedRoute===id?uiIcon('check'):''}</button>`).join('')}
+   </div>
+ </div>`:`<p class="route-context">${uiIcon('pin')}${safe(ROUTES[selectedRoute].route)}</p>`;
+ const tabs=!activeRide&&['rides','host'].includes(key)?`<div class="ride-tabs" aria-label="Grab pages">${button('Find rides','rides',key==='rides'?'active':'secondary')}${button('Host a ride','host',key==='host'?'active':'secondary')}</div>`:'';
+ const confirmation=pendingRoute?`<div class="confirm" role="alert"><p>Leave your queue and switch to ${safe(ROUTES[pendingRoute].label)}?</p><button data-confirm-route="yes">Leave queue & switch</button><button class="secondary" data-confirm-route="no">Keep current route</button></div>`:'';
+ if(key==='location'&&pendingAction==='join'){m.title='Confirm your pickup point';m.blocks[0].title='Allow location access';m.blocks[0].text='Confirm you are near the '+ROUTES[selectedRoute].origin+' pickup point before joining. This will not add you to the shuttle waiting queue.';m.blocks.find(b=>b.type==='button').label='Verify location & continue';}
+ const guarded=key==='location'&&pendingAction==='host'?'<p class="text">Check in at this pickup point first. Then continue to your ride.</p>':'';
+ const subtitles={rides:'Find a seat with students nearby.',host:'Start a group. Share the cost.',edit:'Update the total for everyone in your crew.'};
+ document.querySelector('#content').innerHTML=`<div class="page-heading"><span class="eyebrow">${m.tab==='rides'?'SHARE A GRAB':m.tab==='timetable'?'PLAN YOUR JOURNEY':'YOUR CAMPUS SHUTTLE'}</span><h1 id="page-title" tabindex="-1">${safe(m.title)}</h1>${subtitles[key]?`<p class="page-subtitle">${subtitles[key]}</p>`:''}</div>`+selector+tabs+confirmation+guarded+alert+'<div class="error" id="form-error" role="alert"></div>'+renderBlocks(m.blocks);
+ document.querySelector('#content').scrollTop=0;
+ document.querySelector('#nav').innerHTML=[['home','Home'],['timetable','Timetable'],['rides','Share a Grab']].map(([k,label])=>`<button class="${m.tab===k?'active':''}" data-to="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="${icons[k]}"/></svg>${label}</button>`).join('');
+}
+function navigate(to){
+ if(activeRide&&['location','queue'].includes(to)){askToLeaveRide();return;}
+ if(to==='host'&&!activeRide&&checkedIn?.route!==selectedRoute){pendingAction='host';render('location');return;}
+ if(to==='queue'&&currentScreen==='location'){const next=pendingAction;pendingAction=null;if(next==='join'){joinRide();return;}checkedIn={route:selectedRoute,at:Date.now()};render(next||'queue');return;}
+ if(to==='done'&&activeRide==='manage'){record().status='departed';storeRecord();activeRide=null;checkedIn=null;}
+ if(currentScreen==='location')pendingAction=null;
+ render(to);
+}
+function askToLeaveRide(){
+ if(!activeRide)return;
+ pendingWait={route:selectedRoute,rideId:selectedRideIds[selectedRoute]||'main',role:activeRide};
+ const host=activeRide==='manage';
+ document.querySelector('#leave-ride-title').textContent=host?'Cancel your Grab ride?':'Leave your Grab group?';
+ document.querySelector('#leave-ride-message').textContent=host?'Cancel your hosted ride before joining the shuttle waiting queue. Your crew will lose this ride. Then confirm your pickup location to check in.':'Leave this ride before joining the shuttle waiting queue. Then confirm you are at the pickup point to check in.';
+ document.querySelector('#leave-ride-continue').textContent=host?'Cancel ride & continue':'Leave ride & continue';
+ document.querySelector('#leave-ride-dialog').showModal();
+}
+function closeRideDialog(){const dialog=document.querySelector('#leave-ride-dialog');if(dialog.open)dialog.close();}
+function askToLeaveWaiting(){
+ pendingJoin={route:selectedRoute,rideId:selectedRideIds[selectedRoute]||'main',name:myName};
+ const origin=ROUTES[checkedIn.route]?.origin||'the shuttle stop';
+ document.querySelector('#leave-waiting-message').textContent='You are checked in at '+origin+'. Joining this Grab will remove you from the shuttle waiting queue.';
+ document.querySelector('#leave-waiting-dialog').showModal();
+}
+function closeWaitingDialog(){const dialog=document.querySelector('#leave-waiting-dialog');if(dialog.open)dialog.close();}
+function joinRide(leaveWaiting=false){
+ const r=record();
+ // Check capacity before ending a queue check-in, including on confirmation.
+ if(r.status!=='open'||r.names.length>=4){closeWaitingDialog();pendingJoin=null;render('full');return;}
+ if(checkedIn&&!leaveWaiting){askToLeaveWaiting();return;}
+ const wasWaiting=Boolean(checkedIn);
+ if(!r.names.includes(myName))r.names.push(myName);
+ acceptedFare=r.fare;activeRide='joined';checkedIn=null;pendingJoin=null;closeWaitingDialog();storeRecord();render('joined');
+ if(wasWaiting)showToast('You left the shuttle queue and joined the ride.');
+}
+function error(message){document.querySelector('#form-error').textContent=message;}
+function command(action){
+ const r=record();
+ if(action==='keepRideToWait'){pendingWait=null;closeRideDialog();render(activeRide||'home');return;}
+ if(action==='leaveRideToWait'){
+  if(!pendingWait||pendingWait.route!==selectedRoute||pendingWait.rideId!==(selectedRideIds[selectedRoute]||'main')||pendingWait.role!==activeRide){pendingWait=null;closeRideDialog();render(activeRide||'home');return;}
+  if(activeRide==='manage')r.status='cancelled';else r.names=r.names.filter(n=>n!==myName);
+  storeRecord();activeRide=null;acceptedFare=null;checkedIn=null;pendingAction=null;pendingWait=null;closeRideDialog();navigate('location');return;
+ }
+ if(action==='keepWaiting'){pendingJoin=null;closeWaitingDialog();render('queue');return;}
+ if(action==='leaveAndJoin'){
+  if(!pendingJoin||pendingJoin.route!==selectedRoute||pendingJoin.rideId!==(selectedRideIds[selectedRoute]||'main')){pendingJoin=null;closeWaitingDialog();render('details');return;}
+  myName=pendingJoin.name;joinRide(true);return;
+ }
+ if(action==='save'){
+   if(activeRide!=='manage')return;
+   const value=Number(document.querySelector('#editFare').value);
+   if(!Number.isFinite(value)||value<=0||value>9999.99||Math.abs(value*100-Math.round(value*100))>0.000001){error('Enter a valid fare with up to 2 decimal places.');return;}
+   r.fare=value;storeRecord();render('manage');document.querySelector('#page-title').focus({preventScroll:true});showToast('Price changed successfully.');
+ }else if(action==='create'){
+   if(activeRide)return;
+   const value=Number(document.querySelector('#createFare').value),name=document.querySelector('#hostName').value.trim(),phone=document.querySelector('#hostPhone').value.replace(/[\s()-]/g,'');
+   if(!name||!/^((\+?60)|0)1\d{8,9}$/.test(phone)||!Number.isFinite(value)||value<=0||value>9999.99||Math.abs(value*100-Math.round(value*100))>0.000001){error('Enter your name, a valid Malaysian phone number and a positive fare with up to 2 decimal places.');return;}
+   hostName=name;createOwnRide(value,name);activeRide='manage';checkedIn=null;acceptedFare=null;render('manage');
+ }else if(action==='join'){
+   if(activeRide)return;
+   myName=document.querySelector('#joinName').value.trim();if(!myName){error('Enter your name.');return;}
+   if(checkedIn?.route!==selectedRoute){pendingAction='join';render('location');return;}joinRide();
+ }else if(action==='board'||action==='leaveQueue'){checkedIn=null;render('home');
+ }else if(action==='stay'){acceptedFare=r.fare;activeRide='joined';render('joined');
+ }else if(action==='leave'){
+   if(!isMember())return;r.names=r.names.filter(n=>n!==myName);storeRecord();activeRide=null;acceptedFare=null;render('rides');
+ }else if(action==='cancel'){
+   if(activeRide!=='manage')return;r.status='cancelled';storeRecord();activeRide=null;render('rides');
+ }
+}
+function receiveUpdate(){if(activeRide==='manage')render('manage');else if(isMember()){
+ if(record().status!=='open'){activeRide=null;acceptedFare=null;render('rides');showToast('This ride has closed.');}
+ else render('joined');
+}}
+document.querySelector('#leave-ride-dialog').addEventListener('cancel',()=>{pendingWait=null;});
+document.querySelector('#leave-waiting-dialog').addEventListener('cancel',()=>{pendingJoin=null;});
+window.addEventListener('storage',event=>{const base='shuttlewise-demo-'+selectedRoute;if(event.key===base||event.key?.startsWith(base+':')){const id=event.key===base?'main':event.key.slice(base.length+1);delete rideRecords[selectedRoute+':'+id];delete records[selectedRoute];if(id===(selectedRideIds[selectedRoute]||'main'))receiveUpdate();if(!activeRide&&currentScreen==='rides')render('rides');}else if(event.key==='shuttlewise-rides-'+selectedRoute&&!activeRide&&currentScreen==='rides')render('rides');});
+document.querySelector('#states').innerHTML=Object.keys(MODEL).filter(k=>!['hostsaved','updated'].includes(k)).map(k=>`<option value="${k}">${safe(({manage:'Host · Your ride',edit:'Host · Edit price',joined:'Member · Your group',fare:'Member · Price changed'})[k]||screenModel(k,selectedRoute).title)}</option>`).join('');
+// These controls sit outside the student phone UI and load demo roles/states.
+document.querySelector('#states').onchange=e=>{
+ const key=e.target.value;
+ if(['manage','edit'].includes(key)){checkedIn=null;activeRide='manage';hostName=record().names[0]||'Alex';}
+ else if(['joined','updated','fare'].includes(key)){checkedIn=null;activeRide='joined';if(!record().names.includes(myName)){record().names.push(myName);storeRecord();}if(key==='fare'){acceptedFare=record().fare;record().fare=Number((record().fare+4).toFixed(2));storeRecord();}else if(acceptedFare===null)acceptedFare=record().fare;}
+ else activeRide=null;
+ render(key);
+};
+document.querySelector('#simulate-price').onclick=()=>{if(!isMember()){showToast('Open a joined group to preview a host price change.');return;}record().fare=record().fare===12?16:12;storeRecord();receiveUpdate();};
+function changeRoute(id){if(!ROUTES[id]||id===selectedRoute||activeRide)return;if(checkedIn){pendingRoute=id;render(currentScreen);}else{selectedRoute=id;render(currentScreen);}}
+function showRouteOptions(trigger, open){
+ trigger.setAttribute('aria-expanded',String(open));
+ document.querySelector('#preview-route-options').hidden=!open;
+}
+document.addEventListener('focusout',e=>{
+ const picker=e.target.closest('.route-picker');
+ if(picker&&e.relatedTarget&&!picker.contains(e.relatedTarget))showRouteOptions(picker.querySelector('.route-trigger'),false);
+});
+document.addEventListener('pointerdown',e=>{
+ const trigger=document.querySelector('.route-trigger[aria-expanded="true"]');
+ if(trigger&&!trigger.parentElement.contains(e.target))showRouteOptions(trigger,false);
+});
+document.addEventListener('keydown',e=>{
+ const trigger=e.target.closest('.route-picker')?.querySelector('.route-trigger[aria-expanded="true"]');
+ if(e.key==='Escape'&&trigger){trigger.focus();showRouteOptions(trigger,false);}
+});
+document.onclick=e=>{
+ const trigger=e.target.closest('.route-trigger');
+ if(trigger){showRouteOptions(trigger,trigger.getAttribute('aria-expanded')==='false');return;}
+ const route=e.target.closest('[data-route]');
+ if(route){
+   changeRoute(route.dataset.route);
+   const currentTrigger=document.querySelector('.route-trigger');
+   currentTrigger.focus();
+   showRouteOptions(currentTrigger,false);
+   return;
+ }
+ const confirm=e.target.closest('[data-confirm-route]');if(confirm){if(confirm.dataset.confirmRoute==='yes'){selectedRoute=pendingRoute;checkedIn=null;}pendingRoute=null;render(currentScreen);return;}
+ const ride=e.target.closest('[data-ride]');if(ride){if(activeRide)return;selectRide(ride.dataset.ride);navigate('details');return;}
+ const cmd=e.target.closest('[data-command]');if(cmd){command(cmd.dataset.command);return;}
+ const b=e.target.closest('[data-to]');if(b)navigate(b.dataset.to);
+};render('home');
+
+</script></html>

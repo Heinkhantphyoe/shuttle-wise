@@ -1,0 +1,44 @@
+.route-picker {
+  min-width: 0;
+  margin: 0 0 1rem;
+  border: 1px solid var(--line);
+  border-radius: .85rem;
+  background: white;
+}
+
+.route-picker button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: .65rem;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+}
+
+.route-picker .route-trigger { padding: .65rem .75rem; }
+.route-picker .route-trigger:hover, .route-picker .route-option:hover { background: #f4f7fc; }
+.route-picker svg { display: block; flex: none; width: 1.15rem; height: 1.15rem; }
+.route-picker .route-pin {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: .55rem;
+  background: #edf3ff;
+  color: var(--blue);
+}
+.route-picker .route-copy { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.route-picker .route-copy small { display: block; color: var(--muted); font-size: .7rem; }
+.route-picker .route-copy strong, .route-picker .route-option { font-size: .875rem; }
+.route-picker .route-chevron { color: var(--muted); }
+.route-picker [aria-expanded="true"] .route-chevron { transform: rotate(180deg); }
+.route-picker .route-options { display: grid; gap: .25rem; padding: .4rem; border-top: 1px solid var(--line); }
+.route-picker .route-options[hidden] { display: none; }
+.route-picker .route-option { justify-content: space-between; padding: .45rem .7rem; border-radius: .55rem; }
+.route-picker .route-option[aria-pressed="true"] { background: #edf3ff; color: var(--blue); }

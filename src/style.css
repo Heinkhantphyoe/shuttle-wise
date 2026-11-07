@@ -1,0 +1,59 @@
+:root {
+  font: 16px/1.5 system-ui, sans-serif;
+  color: #10213b;
+  background: #edf2f8;
+  --muted: #47566d;
+  --line: #dbe3ed;
+  --blue: #1559dd;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: 1.75rem; line-height: 1.15; margin-bottom: 1rem; }
+h2 { font-size: 1.15rem; }
+h3 { font-size: 1rem; }
+p { color: var(--muted); margin-block: .35rem; }
+.app { max-width: 480px; min-height: 100dvh; margin: auto; background: #f8fafc; display: flex; flex-direction: column; }
+.app.admin { max-width: 1050px; }
+.brand { display: flex; align-items: center; gap: .65rem; padding: 1rem 1.25rem; background: #10213b; color: white; }
+.brand strong, .brand small { display: block; }
+.brand small { color: #c4d3e9; }
+.logo { display: grid; flex: none; place-items: center; width: 2.35rem; height: 2.35rem; border-radius: .65rem; background: var(--blue); }
+.profile-switcher { position: relative; flex: none; margin-inline-start: auto; }
+.profile-switcher summary { display: grid; place-items: center; width: 44px; height: 44px; list-style: none; cursor: pointer; border: 1px solid #43536d; border-radius: .65rem; }
+.profile-switcher summary::-webkit-details-marker { display: none; }
+.profile-switcher summary:hover, .profile-switcher[open] summary { background: #253957; }
+.profile-switcher summary:focus-visible { outline: 3px solid #87b1ff; outline-offset: 2px; }
+.profile-links { position: absolute; z-index: 2; inset-block-start: calc(100% + .4rem); inset-inline-end: 0; min-width: 8rem; padding: .3rem; border: 1px solid var(--line); border-radius: .7rem; background: white; box-shadow: 0 6px 20px #10213b26; }
+.profile-links a { display: flex; align-items: center; min-height: 44px; padding: .4rem .65rem; border-radius: .45rem; color: #10213b; text-decoration: none; }
+.profile-links a:hover, .profile-links a[aria-current] { background: #e6efff; color: #173c7a; }
+.content { flex: 1; padding: 1.4rem 1.25rem; }
+.card, .hero { border-radius: 1rem; padding: 1.15rem; margin-block: .85rem; }
+.card { background: white; border: 1px solid var(--line); }
+.hero { background: #10213b; color: white; }
+.hero small, .hero p { color: #d3e0f6; }
+.hero h2 { font-size: 1.5rem; margin-top: .25rem; }
+.notice { padding: .75rem; border-radius: .65rem; background: #e6efff; color: #173c7a; }
+label { display: grid; gap: .3rem; font-weight: 600; margin-block: .65rem; }
+button, input, select { min-height: 44px; font: inherit; border-radius: .65rem; padding: .45rem .75rem; }
+input, select { width: 100%; border: 1px solid #a9b8cb; background: white; color: #10213b; }
+button { border: 1px solid transparent; background: var(--blue); color: white; font-weight: 650; cursor: pointer; margin-top: .65rem; }
+button.secondary { background: white; color: #173c7a; border-color: var(--line); }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #87b1ff; outline-offset: 2px; }
+.student button { width: 100%; }
+.actions { display: flex; flex-wrap: wrap; gap: .45rem; }
+.actions button { flex: 1 1 115px; }
+nav { position: sticky; bottom: 0; display: flex; justify-content: space-evenly; gap: .35rem; padding: .5rem .65rem; background: #fff; border-top: 1px solid var(--line); }
+nav button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .2rem; margin: 0; font-size: .9rem; }
+nav button svg { flex: none; }
+nav button[aria-current] { background: #e6efff; border-color: #b4cbf1; }
+.times { list-style: none; padding: 0; }
+.times li { display: flex; justify-content: space-between; gap: .5rem; padding: .55rem 0; border-bottom: 1px solid var(--line); }
+.times span { color: var(--muted); }
+.columns { display: grid; gap: .85rem; }
+.chart { display: flex; align-items: end; height: 90px; gap: .3rem; margin-top: .8rem; }
+.chart span { flex: 1; background: var(--blue); border-radius: .2rem .2rem 0 0; }
+.chart span.previous { background: #a8bada; }
+@media (min-width: 660px) { .columns { grid-template-columns: 1fr 1fr; } }
