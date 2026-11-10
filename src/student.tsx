@@ -6,7 +6,7 @@ import { useEmulators } from './firebase'
 import { updateActivity, watchActivity, watchRide, watchRideMembership, watchRides, type Activity, type Ride, type RideListing, type RideMembership, type Row } from './live'
 import { confirmPickup } from './pickup'
 import { routeIds, routes, type RouteId } from './schedule'
-import { NextDeparture, TravelAnnouncements, TravelComparison, TravelTimetable, useTravelSnapshot } from './travel-student'
+import { NextDeparture, TravelAnnouncements, TravelTimetable, useTravelSnapshot } from './travel-student'
 
 const tabs = {
   home: { label: 'Home', icon: 'M3 10 12 3l9 7v11h-6v-7H9v7H3z' },
@@ -115,7 +115,6 @@ function fareFrom(value: FormDataEntryValue | null) {
 }
 
 export function Student({ db, user }: Session) {
-  const [preferredRoom, setPreferredRoom] = useState<string>()
   const [route, setRoute] = useState<RouteId>('apu')
   const [view, setView] = useState(studentView)
   const tab = view === 'find' ? 'rides' : view
@@ -271,7 +270,7 @@ export function Student({ db, user }: Session) {
   }, 'You left the ride.')
   const selected = routes[route]
   const point = pickups[route]
-  const { comparison, settingsError } = useTravelSnapshot(db, user, route, now, inRide)
+  const comparison = useTravelSnapshot(db, user, route, now)
   const ready = activityReady && !busy
   const checkInHere = activity?.kind === 'queue' && activity.route === route
   const canShare = (pickup: RouteId) => ready && membershipReady && !inRide
@@ -297,13 +296,6 @@ export function Student({ db, user }: Session) {
       {(tab === 'home' || tab === 'timetable') && <TravelAnnouncements comparison={comparison} now={now} />}
       {tab === 'home' && <>
         <NextDeparture comparison={comparison} now={now} />
-        <TravelComparison comparison={comparison} now={now} user={user} inRide={inRide}
-          aiReady={activityReady && membershipReady && comparison.queueCount !== undefined && comparison.roomsAvailable !== undefined}
-          onTimetable={event => navigate(event, 'timetable')}
-          onRides={event => { setPreferredRoom(comparison.cheapest?.id); navigate(event, inRide ? 'rides' : 'find') }} />
-        {settingsError && <p className="notice">Route settings unavailable: {settingsError}</p>}
-      </>}
-      {tab === 'home' && <>
         <section className="card queue-card">
           <h2>{checkInHere ? 'You’re checked in' : 'Waiting at the stop?'}</h2>
           <div role="status">
@@ -359,7 +351,7 @@ export function Student({ db, user }: Session) {
           {browsingRides ? <>
             <a className="student-link" href={viewUrl('rides')} onClick={event => navigate(event, 'rides')}>Back to Grab shares</a>
             {activityReady && activity?.kind !== 'queue' && <p>Check in at a ride’s pickup to join it.</p>}
-            <RideList db={db} user={user} preferredRoom={preferredRoom} canJoin={canShare} join={(ride, name) => {
+            <RideList db={db} user={user} canJoin={canShare} join={(ride, name) => {
               setPendingShare({
                 action: 'Join',
                 route: ride.route,
@@ -432,8 +424,7 @@ function RideFare({ fare, count }: { fare: number; count: number }) {
   </div>
 }
 
-function RideList({ db, user, canJoin, join, preferredRoom }: Session & {
-  preferredRoom?: string
+function RideList({ db, user, canJoin, join }: Session & {
   canJoin: (route: RouteId) => boolean
   join: (ride: Row<RideListing>, name: string) => void
 }) {
@@ -464,9 +455,7 @@ function RideList({ db, user, canJoin, join, preferredRoom }: Session & {
   return <>
     {!rides?.length && <div className="card" role="status"><p>{error || (rides ? 'No Grab shares are open right now.'
       : db && user ? 'Loading Grab shares…' : 'Live Grab listings are unavailable.')}</p></div>}
-    {rides && preferredRoom && !rides.some(ride => ride.id === preferredRoom && ride.count < 4) && <p className="notice">The room you viewed is no longer available. Review the current listings.</p>}
-    {rides && [...rides].sort((a, b) => Number(b.id === preferredRoom) - Number(a.id === preferredRoom)).map(ride => <section key={ride.id} className="card">
-      {ride.id === preferredRoom && <p className="student-eyebrow">Room from your travel comparison</p>}
+    {rides?.map(ride => <section key={ride.id} className="card">
       <h2>{routes[ride.route].origin} → {routes[ride.route].destination}</h2>
       <RideFare fare={ride.fare} count={ride.count} />
       {ride.count >= 4 ? <p>This ride is full.</p> : <form onSubmit={event => submit(event, ride)}>

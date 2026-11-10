@@ -51,7 +51,7 @@ The Worker uses the Firebase ID token to read the caller’s own allowlist entry
 
 Use two phones at each pickup to confirm that check-ins sync, wrong-route and inaccurate locations are rejected, tapping **I got the bus** removes the student from the live queue, and hosting or joining a ride preserves the original queue spot. Check an anonymous session and a Google account without an allowlist entry against the dashboard and Worker briefing endpoint. Force failures in each AI provider and verify that computed trend figures stay visible. Track physical and deployment checks in [TODO.md](TODO.md).
 
-Students can check in from within 30 metres of the selected pickup with an accurate location reading. The browser checks distance locally, so a modified client can bypass the geofence. Admin trends compare the latest seven Malaysia calendar days, including today, with the previous seven.
+Students can check in from within 50 metres of the selected pickup with a location reading accurate to 30 metres or better. The browser checks distance locally, so a modified client can bypass the geofence. Admin trends compare the latest seven Malaysia calendar days, including today, with the previous seven.
 
 Close open rides from the previous version before switching over. The updated client can still manage an older ride for its existing members, but only new rides have browse listings. Open listings show the route, fare and seat count. Only ride members can read names and UIDs. Deploy the updated rules and Hosting bundle together because earlier clients use the old write paths.
 
@@ -60,4 +60,4 @@ Close open rides from the previous version before switching over. The updated cl
 - APU’s directions link points to `3.0554057, 101.7005614`. [APU directions](https://www.apu.edu.my/connect) · [Google Maps pin](https://www.google.com/maps/search/?api=1&query=3.0554057%2C101.7005614)
 - Bukit Jalil LRT station is approximately `3.0581, 101.6919`. [Station reference](https://www.klia2.info/rail/rapidkl-lrt/ampang-line/bukit-jalil/) · [Google Maps pin](https://www.google.com/maps/search/?api=1&query=3.0581%2C101.6919)
 
-Use a dropped pin at each actual boarding spot for the 30-metre check-in radius. The public references identify the campus and station landmarks.
+Use a dropped pin at each actual boarding spot for the 50-metre check-in radius. The public references identify the campus and station landmarks.

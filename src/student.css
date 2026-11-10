@@ -105,12 +105,6 @@
 .announcement-item small, .travel-footnote { color: var(--muted); font-size: .875rem; }
 .announcement-item summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; color: var(--blue); font-weight: 600; }
 .announcement-item blockquote { margin: .5rem 0; padding-inline-start: .75rem; border-inline-start: 2px solid var(--line); white-space: pre-wrap; }
-.travel-options-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; margin-top: 1rem; }
-.travel-option { min-width: 0; padding: 1rem; border: 1px solid var(--line); border-radius: .75rem; }
-.travel-option .student-link { width: 100%; margin-top: .5rem; }
-.travel-cautions { color: var(--muted); padding-inline-start: 1.25rem; font-size: .875rem; }
-.travel-cautions li + li { margin-top: .5rem; }
-.travel-ai-explanation { border-top: 1px solid var(--line); margin-top: 1rem; padding-top: 1rem; }
 .trip-detail { display: block; color: var(--muted); font-size: .75rem; }
 .travel-timetable .times li { align-items: start; }
 .travel-timetable .times span { text-align: end; max-width: 48%; }
@@ -225,13 +219,9 @@
 .student-app .content { padding-bottom: calc(2rem + env(safe-area-inset-bottom)); }
 .student-nav { flex-shrink: 0; }
 .student-nav a { min-width: 0; }
-.travel-option h3 { margin-bottom: .5rem; }
-.student-app .travel-comparison .travel-footnote { line-height: 1.6; }
 .student-app .times li > div { min-width: 0; }
 
 @media (min-width: 640px) {
-  .travel-options-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .travel-option { padding: 1.25rem; }
   .student-nav { align-self: center; width: min(32rem, calc(100% - 3rem)); }
 }
 @media (min-width: 768px) {
