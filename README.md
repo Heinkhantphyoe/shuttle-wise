@@ -1,5 +1,7 @@
 # ShuttleWise
 
+Production: **https://shuttle-wise.vercel.app** · Admin: **https://shuttle-wise.vercel.app/admin**. Vercel hosts the app and protected Gemini server function; Firebase provides sign-in and live data. See [the production deployment record](VERCEL_DEPLOYMENT.md) for verification, settings and the remaining on-site GPS test.
+
 The React demo provides two weekday timetables, live shuttle queues and Grab shares, and an admin dashboard. The original prototype and timetable images are the design and schedule references.
 
 Transport announcements now add reviewed temporary delays/cancellations without changing the standard timetable. Home and Timetable share the same route-specific calculations. See [AI_SETUP.md](AI_SETUP.md) for the admin workflow, safe Gemini key setup, and the local demo reset. New AI calls are not live until the Worker, keys, and App Check are configured.

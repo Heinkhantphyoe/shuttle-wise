@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-11-11T10:01:58.279Z",
+  "homepage": 200,
+  "scriptsChecked": 1,
+  "geminiSecretInPublicAssets": false,
+  "privatePaths": {
+    "/.env": 404,
+    "/worker/.dev.vars": 404,
+    "/.firebase/production-2026-11-11/public-config.json": 404
+  },
+  "unsignedAI": 401
+}

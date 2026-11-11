@@ -35,6 +35,24 @@ service cloud.firestore {
       allow get: if self(uid) && request.auth.token.firebase.sign_in_provider == 'google.com';
     }
 
+    match /aiRateLimits/{uid} {
+      function validRate() {
+        return request.resource.data.keys().hasAll(['count', 'startedAt'])
+          && request.resource.data.keys().hasOnly(['count', 'startedAt'])
+          && request.resource.data.count is int && request.resource.data.count >= 1 && request.resource.data.count <= 6
+          && request.resource.data.startedAt is timestamp;
+      }
+      allow get: if self(uid);
+      allow create: if self(uid) && validRate() && request.resource.data.count == 1
+        && request.resource.data.startedAt == request.time;
+      allow update: if self(uid) && validRate() && (
+        (request.time < resource.data.startedAt + duration.value(60, 's')
+          && request.resource.data.startedAt == resource.data.startedAt && request.resource.data.count == resource.data.count + 1)
+        || (request.time >= resource.data.startedAt + duration.value(60, 's')
+          && request.resource.data.startedAt == request.time && request.resource.data.count == 1)
+      );
+    }
+
     function validRange(range) {
       return range == null || (range is list && range.size() == 2 && range[0] is int && range[1] is int
         && range[0] >= 1 && range[1] >= range[0] && range[1] <= 1000000);

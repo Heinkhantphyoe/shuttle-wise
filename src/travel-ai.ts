@@ -8,15 +8,16 @@ import { parseGuidance, type AIRequest } from './ai-contract'
 const workerUrl = import.meta.env.VITE_AI_WORKER_URL
 export const localAI = import.meta.env.DEV && import.meta.env.VITE_LOCAL_AI === true
   && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) && !useEmulators
-export const travelAIConfigured = localAI || !!workerUrl && !!appCheck && !useEmulators
+export const hostedAI = import.meta.env.VITE_AI_BACKEND === 'vercel' && !useEmulators
+export const travelAIConfigured = localAI || (hostedAI || !!workerUrl) && !!appCheck && !useEmulators
 export type NoticeImage = { mimeType: 'image/jpeg' | 'image/png'; data: string }
 
 async function request(path: string, input: object, user: User, signal?: AbortSignal) {
   if (useEmulators) throw new Error('AI reading is unavailable in the local Firebase demo.')
-  if (!localAI && !workerUrl) throw new Error('AI server is not connected. Add VITE_AI_WORKER_URL and restart the app. See AI_SETUP.md.')
+  if (!localAI && !hostedAI && !workerUrl) throw new Error('AI server is not connected. Add VITE_AI_WORKER_URL and restart the app. See AI_SETUP.md.')
   if (!localAI && !appCheck) throw new Error('AI verification is not configured. Add VITE_RECAPTCHA_ENTERPRISE_SITE_KEY and restart the app. See AI_SETUP.md.')
   const [idToken, verification] = await Promise.all([user.getIdToken(), localAI ? undefined : getToken(appCheck!)])
-  const base = new URL(localAI ? location.origin : workerUrl!)
+  const base = new URL(localAI || hostedAI ? location.origin : workerUrl!)
   base.pathname = localAI ? path.replace('/ai/', '/__local-ai/') : path
   base.search = ''
   base.hash = ''
@@ -44,7 +45,7 @@ export async function travelAIStatus(user: User) {
 }
 
 export async function localBriefing(input: AIRequest, user: User) {
-  if (!localAI) throw new Error('Local briefing is unavailable.')
+  if (!localAI && !hostedAI) throw new Error('Server briefing is unavailable.')
   return parseGuidance(JSON.stringify(await request('/ai/briefing', input, user)))
 }
 

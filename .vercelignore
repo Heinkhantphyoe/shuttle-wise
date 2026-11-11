@@ -1,0 +1,12 @@
+.env*
+.firebase
+.git
+.vercel
+node_modules
+dist
+output
+tests
+worker/.dev.vars*
+worker/.wrangler
+*-debug.log
+

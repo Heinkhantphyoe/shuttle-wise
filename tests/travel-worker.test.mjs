@@ -56,7 +56,8 @@ test('travel endpoints enforce App Check and admin extraction, verify canonical 
     providerCalls++
     if (failProvider) return new Response(null, { status: 503 })
     const extraction = body.generationConfig.responseSchema.properties.changes
-    const value = extraction ? { title: 'Traffic delay', summary: 'The selected departure is delayed.', reason: 'Traffic', serviceDate: date,
+    const briefing = body.generationConfig.responseSchema.properties.guidance
+    const value = briefing ? { guidance: 'The live queues are quiet; check the route summaries before planning.' } : extraction ? { title: 'Traffic delay', summary: 'The selected departure is delayed.', reason: 'Traffic', serviceDate: date,
       changes: [{ route: 'apu', type: 'delay', departures: ['14:30'], start: null, end: null, delayMinutes: 40, revisedTime: null, capacity: null, pickup: '' }],
       unresolved: [], evidence: ['The 2:30 departure is 40 minutes late.'] }
       : { outlook: 'compare_both', explanation: 'Review the shuttle and available group before deciding.', evidenceIds: invalid ? ['invented'] : ['room:room'], cautionCodes: [invalidCaution ? 'unknown_delay' : 'estimate_only'] }
@@ -85,6 +86,12 @@ test('travel endpoints enforce App Check and admin extraction, verify canonical 
   assert.equal((await send('/ai/notice-extract', admin, { text: 'x'.repeat(2_900_000) })).status, 400)
   assert.equal((await send('/ai/notice-extract', admin, { direction: 'invalid', text: 'late' })).status, 400)
   assert.equal(providerCalls, 0)
+  const metrics = { current: 0, previous: 0, peakHour: -1, peakCount: 0 }
+  assert.equal((await send('/ai/briefing', student, { kind: 'briefing', metrics: { apu: metrics, lrt: metrics } })).status, 403)
+  assert.equal((await send('/ai/briefing', admin, { kind: 'briefing', metrics: { apu: metrics, lrt: metrics } }, '')).status, 401)
+  const briefing = await send('/ai/briefing', admin, { kind: 'briefing', metrics: { apu: metrics, lrt: metrics } })
+  assert.equal(briefing.status, 200)
+  assert.ok((await briefing.json()).guidance)
   const extracted = await send('/ai/notice-extract', admin, { text: `On ${date}, the APU → LRT 2:30 departure is 40 minutes late. Traffic.` })
   assert.equal(extracted.status, 200)
   assert.equal((await extracted.json()).draft.changes[0].delayMinutes, 40)

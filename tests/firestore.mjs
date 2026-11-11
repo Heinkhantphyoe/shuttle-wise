@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { after, before, beforeEach, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing'
-import { collection, doc, FieldPath, getDoc, getDocs, query, serverTimestamp, setDoc, where, writeBatch } from 'firebase/firestore'
+import { collection, deleteDoc, doc, FieldPath, getDoc, getDocs, query, serverTimestamp, setDoc, Timestamp, where, writeBatch } from 'firebase/firestore'
 import { updateActivity } from '../src/live.ts'
 import { noticeRecord, publishNotice, saveSettings, withdrawNotice } from '../src/notices.ts'
 import { compareStudentJourney } from '../src/journey.ts'
@@ -42,6 +42,26 @@ function student(uid) {
 }
 
 const google = { firebase: { sign_in_provider: 'google.com' } }
+
+test('AI quotas are private, capped, atomic increments and cannot be reset early', async () => {
+  const db = student('quota-user'), other = student('quota-other')
+  const ref = doc(db, 'aiRateLimits', 'quota-user')
+  await assertSucceeds(getDoc(ref))
+  await assertFails(setDoc(ref, { count: 2, startedAt: serverTimestamp() }))
+  await assertSucceeds(setDoc(ref, { count: 1, startedAt: serverTimestamp() }))
+  const startedAt = (await getDoc(ref)).data().startedAt
+  await assertFails(setDoc(ref, { count: 1, startedAt: serverTimestamp() }))
+  await assertFails(setDoc(ref, { count: 3, startedAt }))
+  await assertFails(getDoc(doc(other, 'aiRateLimits', 'quota-user')))
+  await assertFails(getDocs(collection(db, 'aiRateLimits')))
+  await assertFails(deleteDoc(ref))
+  for (let count = 2; count <= 6; count++) await assertSucceeds(setDoc(ref, { count, startedAt }))
+  await assertFails(setDoc(ref, { count: 7, startedAt }))
+  await env.withSecurityRulesDisabled(context => setDoc(doc(context.firestore(), 'aiRateLimits', 'quota-user'), {
+    count: 6, startedAt: Timestamp.fromMillis(Date.now() - 61_000),
+  }))
+  await assertSucceeds(setDoc(ref, { count: 1, startedAt: serverTimestamp() }))
+})
 
 test('published admin delays reach only checked-in students on the affected route', async () => {
   await env.withSecurityRulesDisabled(context => setDoc(doc(context.firestore(), 'admins', 'admin'), {}))

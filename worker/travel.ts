@@ -250,7 +250,7 @@ export async function handleTravel(request: Request, env: TravelEnv) {
     'Access-Control-Allow-Methods': 'POST, OPTIONS', Vary: 'Origin', 'Cache-Control': 'no-store' }
   const reply = (status: number, body: object) => Response.json(body, { status, headers })
   const path = new URL(request.url).pathname
-  if (!['/ai/notice-extract', '/ai/journey-advice', '/ai/status'].includes(path)) return reply(404, { error: 'Unknown AI endpoint.' })
+  if (!['/ai/notice-extract', '/ai/journey-advice', '/ai/briefing', '/ai/status'].includes(path)) return reply(404, { error: 'Unknown AI endpoint.' })
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers })
   if (request.method !== 'POST') return reply(405, { error: 'Use POST.' })
   const token = request.headers.get('Authorization')?.match(/^Bearer ([\w.-]{1,8192})$/)?.[1]
@@ -269,6 +269,10 @@ export async function handleTravel(request: Request, env: TravelEnv) {
   catch { return reply(400, { error: 'Invalid or oversized request.' }) }
   if (!env.GEMINI_API_KEY || !env.GEMINI_MODEL || !/^[a-zA-Z0-9.-]{1,100}$/.test(env.GEMINI_MODEL)) return reply(503, { error: 'Gemini is not configured yet. Keep the update and follow AI_SETUP.md. Existing student options still work.' })
   try {
+    if (path === '/ai/briefing') {
+      if (!validAIRequest(input)) return reply(400, { error: 'Use valid briefing metrics only.' })
+      return reply(200, { guidance: await readAdminBriefing(input, env) })
+    }
     if (path === '/ai/notice-extract') {
       if (!object(input) || Object.keys(input).some(key => !['text', 'image', 'direction'].includes(key)) || !isDirection(input.direction)
         || typeof input.text !== 'string' || input.text.length > 8000 || !input.text.trim() && !input.image

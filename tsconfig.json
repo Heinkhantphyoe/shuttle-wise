@@ -8,7 +8,8 @@
     "noEmit": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
-    "types": ["vite/client"]
+    "rewriteRelativeImportExtensions": true,
+    "types": ["vite/client", "node"]
   },
-  "include": ["src", "worker/index.ts"]
+  "include": ["src", "worker/index.ts", "api"]
 }

@@ -1,5 +1,7 @@
 # AI travel updates: setup and use
 
+**Production update — 11 November 2026:** https://shuttle-wise.vercel.app now runs the frontend and protected AI function on Vercel, with the existing `shutterbus` Firebase project. Google admin sign-in, real Gemini notice reading, publication, withdrawal and admin briefing passed on the hosted site. Firebase Auth allows the Vercel domain; production App Check is configured. The Gemini key is a server-only sensitive setting in this Vercel project. See [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md) for the current setup. The Cloudflare instructions below describe the alternative Worker deployment, not a remaining requirement for this Vercel release.
+
 The active Firebase project is now **`shutterbus`** (your project), with a Standard Firestore database in Singapore (`asia-southeast1`). Google and anonymous sign-in are enabled, localhost is authorised, the tested project rules are published, and your Google account is allowlisted as an app admin. `.env`, `.firebaserc` and the Worker Firebase identifiers point to this project.
 
 This is a fresh setup, as requested after the old project denied access. **No old records or Authentication users were copied from `shuttlewise-e77bf`.** That project was not modified. A private configuration rollback backup is under ignored `.firebase/migration-2026-11-11/`; it is not a database backup. Existing users must sign in to the new project. Collections are created by valid app actions rather than empty placeholder records.
