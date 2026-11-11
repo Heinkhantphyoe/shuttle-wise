@@ -1,20 +1,20 @@
 {
-  "checkedAt": "2026-11-07T20:23:12.054Z",
+  "checkedAt": "2026-11-11T09:25:33.416Z",
   "model": "gemini-3.5-flash-lite",
   "scope": "Real Gemini calls through production extraction/advice functions. Public fixtures only. No deployed endpoint, Firebase access, or notice publication.",
   "results": [
     {
       "name": "APU direction: real extraction and 30 → 70 minute countdown",
       "passed": true,
-      "milliseconds": 1171,
+      "milliseconds": 2743,
       "detail": {
         "draft": {
-          "title": "APU to Bukit Jalil LRT Departure Delayed",
+          "title": "APU to Bukit Jalil LRT Delay",
           "summary": "The 2:30 pm APU to Bukit Jalil LRT departure on 9 November 2026 is delayed by 40 minutes due to traffic.",
           "reason": "traffic",
           "serviceDate": "2026-11-09",
           "visibleFrom": 1794204000000,
-          "expiresAt": 1794240000000,
+          "expiresAt": 1794208260000,
           "changes": [
             {
               "route": "apu",
@@ -44,7 +44,7 @@
     {
       "name": "LRT direction: image extraction with a real PNG",
       "passed": true,
-      "milliseconds": 1270,
+      "milliseconds": 4798,
       "detail": {
         "draft": {
           "title": "Test Transport Notice",
@@ -52,7 +52,7 @@
           "reason": "heavy rain",
           "serviceDate": "2026-11-09",
           "visibleFrom": 1794204000000,
-          "expiresAt": 1794240000000,
+          "expiresAt": 1794206760000,
           "changes": [
             {
               "route": "lrt",
@@ -86,15 +86,15 @@
     {
       "name": "Both directions: separate affected departures",
       "passed": true,
-      "milliseconds": 1431,
+      "milliseconds": 6694,
       "detail": {
         "draft": {
-          "title": "Shuttle Delays Due to Traffic and Rain",
-          "summary": "On 9 November 2026, the 2:30 pm APU to Bukit Jalil LRT departure is delayed by 40 minutes due to traffic, and the 2:25 pm Bukit Jalil LRT to APU departure is delayed by 20 minutes due to heavy rain.",
+          "title": "Shuttle Service Delays",
+          "summary": "Delays affecting APU to Bukit Jalil LRT and Bukit Jalil LRT to APU shuttles on 9 November 2026 due to traffic and heavy rain.",
           "reason": "Traffic and heavy rain",
           "serviceDate": "2026-11-09",
           "visibleFrom": 1794204000000,
-          "expiresAt": 1794240000000,
+          "expiresAt": 1794208260000,
           "changes": [
             {
               "route": "apu",
@@ -138,11 +138,11 @@
     {
       "name": "Unknown delay: no invented duration or revised time",
       "passed": true,
-      "milliseconds": 1146,
+      "milliseconds": 1446,
       "detail": {
         "draft": {
-          "title": "APU to Bukit Jalil LRT Shuttle Delay",
-          "summary": "The 2:30 pm APU to Bukit Jalil LRT departure on 9 November 2026 is delayed due to heavy rain, with the exact duration and revised time currently unknown.",
+          "title": "APU to Bukit Jalil LRT Departure Delayed",
+          "summary": "The 2:30 pm APU to Bukit Jalil LRT departure on 9 November 2026 is delayed due to heavy rain, but the exact delay duration and revised time are unknown.",
           "reason": "heavy rain",
           "serviceDate": "2026-11-09",
           "visibleFrom": 1794204000000,
@@ -163,12 +163,13 @@
             }
           ],
           "sourceLabel": "Admin transport update",
-          "sourceExcerpt": "On 9 November 2026, the 2:30 pm APU to Bukit Jalil LRT departure is delayed because of heavy rain.",
+          "sourceExcerpt": "On 9 November 2026, the 2:30 pm APU to Bukit Jalil LRT departure is delayed because of heavy rain.\nThe delay duration and revised departure time are unknown.",
           "sourceUrl": "",
           "demo": false
         },
         "evidence": [
-          "On 9 November 2026, the 2:30 pm APU to Bukit Jalil LRT departure is delayed because of heavy rain."
+          "On 9 November 2026, the 2:30 pm APU to Bukit Jalil LRT departure is delayed because of heavy rain.",
+          "The delay duration and revised departure time are unknown."
         ],
         "unresolved": []
       }
@@ -176,15 +177,15 @@
     {
       "name": "Cancellation: real extraction matches the reported change",
       "passed": true,
-      "milliseconds": 936,
+      "milliseconds": 4662,
       "detail": {
         "draft": {
-          "title": "Cancellation of LRT to APU Shuttle",
+          "title": "LRT to APU Departure Cancellation",
           "summary": "The 2:25 pm Bukit Jalil LRT to APU departure on 9 November 2026 is cancelled due to maintenance.",
           "reason": "maintenance",
           "serviceDate": "2026-11-09",
           "visibleFrom": 1794204000000,
-          "expiresAt": 1794240000000,
+          "expiresAt": 1794205560000,
           "changes": [
             {
               "route": "lrt",
@@ -214,15 +215,15 @@
     {
       "name": "Suspension: real extraction matches the reported change",
       "passed": true,
-      "milliseconds": 1147,
+      "milliseconds": 1405,
       "detail": {
         "draft": {
-          "title": "LRT Service Suspension",
-          "summary": "Bukit Jalil LRT to APU service is suspended from 2:00 pm to 3:00 pm on 9 November 2026 due to road repairs.",
+          "title": "Bukit Jalil LRT to APU Suspension",
+          "summary": "Bukit Jalil LRT to APU service is suspended from 2:00 pm to 3:00 pm on 2026-11-09.",
           "reason": "road repairs",
           "serviceDate": "2026-11-09",
           "visibleFrom": 1794204000000,
-          "expiresAt": 1794240000000,
+          "expiresAt": 1794207660000,
           "changes": [
             {
               "route": "lrt",
@@ -250,15 +251,15 @@
     {
       "name": "Replacement: real extraction matches the reported change",
       "passed": true,
-      "milliseconds": 1151,
+      "milliseconds": 3514,
       "detail": {
         "draft": {
-          "title": "APU Shuttle Replacement on 2026-11-09",
-          "summary": "On 9 November 2026, the 2:30 pm APU to Bukit Jalil LRT departure is replaced with a 2:50 pm departure due to maintenance.",
+          "title": "APU to Bukit Jalil LRT Shuttle Replacement",
+          "summary": "The 2:30 pm APU to Bukit Jalil LRT departure is replaced with a 2:50 pm departure on 9 November 2026 due to maintenance.",
           "reason": "maintenance",
           "serviceDate": "2026-11-09",
           "visibleFrom": 1794204000000,
-          "expiresAt": 1794240000000,
+          "expiresAt": 1794207060000,
           "changes": [
             {
               "route": "apu",
@@ -288,15 +289,15 @@
     {
       "name": "Pickup change: real extraction matches the reported change",
       "passed": true,
-      "milliseconds": 1272,
+      "milliseconds": 1645,
       "detail": {
         "draft": {
-          "title": "APU to Bukit Jalil LRT Pickup Location Change",
-          "summary": "Pickup for the APU to Bukit Jalil LRT shuttle moves to Gate B from 2:00 pm to 4:00 pm on 9 November 2026 due to construction.",
+          "title": "APU to Bukit Jalil LRT pickup location change",
+          "summary": "Pickup for the APU to Bukit Jalil LRT route moves to Gate B from 2:00 pm to 4:00 pm on 9 November 2026 due to construction.",
           "reason": "construction",
           "serviceDate": "2026-11-09",
           "visibleFrom": 1794204000000,
-          "expiresAt": 1794240000000,
+          "expiresAt": 1794211260000,
           "changes": [
             {
               "route": "apu",
@@ -324,15 +325,15 @@
     {
       "name": "Capacity change: real extraction matches the reported change",
       "passed": true,
-      "milliseconds": 1143,
+      "milliseconds": 3333,
       "detail": {
         "draft": {
-          "title": "Bus Capacity Update for APU to Bukit Jalil LRT",
+          "title": "APU to Bukit Jalil LRT Bus Capacity Update",
           "summary": "On 9 November 2026, the 2:30 pm APU to Bukit Jalil LRT departure has 12 available seats due to a smaller bus operating.",
           "reason": "smaller bus is operating",
           "serviceDate": "2026-11-09",
           "visibleFrom": 1794204000000,
-          "expiresAt": 1794240000000,
+          "expiresAt": 1794205860000,
           "changes": [
             {
               "route": "apu",
@@ -362,15 +363,15 @@
     {
       "name": "General announcement: real extraction matches the reported change",
       "passed": true,
-      "milliseconds": 1464,
+      "milliseconds": 3060,
       "detail": {
         "draft": {
           "title": "APU Campus Event Information",
-          "summary": "On 9 November 2026, an APU campus event runs from 2:00 pm to 4:00 pm. This is information for APU to Bukit Jalil LRT passengers because of the campus event. No shuttle times, pickup points or capacity change.",
-          "reason": "Campus event",
+          "summary": "Information for APU to Bukit Jalil LRT passengers regarding a campus event running from 2:00 pm to 4:00 pm on 9 November 2026. No shuttle times, pickup points, or capacity changes.",
+          "reason": "APU campus event",
           "serviceDate": "2026-11-09",
           "visibleFrom": 1794204000000,
-          "expiresAt": 1794240000000,
+          "expiresAt": 1794211260000,
           "changes": [
             {
               "route": "apu",
@@ -385,14 +386,13 @@
             }
           ],
           "sourceLabel": "Admin transport update",
-          "sourceExcerpt": "On 9 November 2026, an APU campus event runs from 2:00 pm to 4:00 pm.\nThis is information for APU to Bukit Jalil LRT passengers because of the campus event.\nNo shuttle times, pickup points or capacity change.",
+          "sourceExcerpt": "On 9 November 2026, an APU campus event runs from 2:00 pm to 4:00 pm.\nThis is information for APU to Bukit Jalil LRT passengers because of the campus event.",
           "sourceUrl": "",
           "demo": false
         },
         "evidence": [
           "On 9 November 2026, an APU campus event runs from 2:00 pm to 4:00 pm.",
-          "This is information for APU to Bukit Jalil LRT passengers because of the campus event.",
-          "No shuttle times, pickup points or capacity change."
+          "This is information for APU to Bukit Jalil LRT passengers because of the campus event."
         ],
         "unresolved": []
       }
@@ -400,10 +400,10 @@
     {
       "name": "Student explanation: real Gemini, validated evidence, calculated fare choice",
       "passed": true,
-      "milliseconds": 878,
+      "milliseconds": 3528,
       "detail": {
         "outlook": "compare_both",
-        "explanation": "Compare both options since the next bus and Grab are available.",
+        "explanation": "The next departure operates normally while a later departure is delayed. You may review the shuttle schedule or check the ride service.",
         "evidenceIds": [
           "schedule:V1_20261022",
           "test-delay@1",
@@ -413,6 +413,14 @@
           "estimate_only",
           "data_unavailable"
         ]
+      }
+    },
+    {
+      "name": "Admin history briefing: real Gemini with numeric summary only",
+      "passed": true,
+      "milliseconds": 8909,
+      "detail": {
+        "guidance": "Both routes recorded no check-ins across the current and previous periods, with no peak activity."
       }
     }
   ]

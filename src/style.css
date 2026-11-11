@@ -83,6 +83,21 @@ nav button[aria-current] { background: #e6efff; border-color: #b4cbf1; }
   overflow-wrap: anywhere;
 }
 .student-toast.error { background: #8b2635; }
+.admin-toasts {
+  position: fixed;
+  z-index: 10;
+  inset-inline: 1rem;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  width: min(32rem, calc(100% - 2rem));
+  margin-inline: auto;
+  pointer-events: none;
+}
+.admin-toasts .student-toast { margin: 0; }
+.admin-toasts .student-toast.error {
+  background: var(--admin-surface);
+  color: var(--danger);
+  border: 1px solid currentColor;
+}
 .times { list-style: none; padding: 0; }
 .times li { display: flex; justify-content: space-between; gap: .5rem; padding: .55rem 0; border-bottom: 1px solid var(--line); }
 .times span { color: var(--muted); }
@@ -121,7 +136,7 @@ input[type='file']::file-selector-button {
 
 .app.admin {
   --blue: #4338ca; --muted: #475569; --line: #dbe1ed;
-  --admin-surface: #fff; --admin-canvas: #f4f6fb; --admin-ink: #0f172a;
+  --admin-surface: #fff; --admin-canvas: #f4f6fb; --admin-ink: #0f172a; --danger: #b91c1c;
   width: 100%; max-width: 76rem; color: var(--admin-ink); background: var(--admin-canvas);
   overflow-wrap: anywhere;
 }
@@ -164,6 +179,12 @@ input[type='file']::file-selector-button {
 .admin .check-label { min-height: 48px; align-items: center; }
 .announcement-result { padding-top: 1.25rem; margin-top: 1.25rem; }
 .announcement-result > p + p { margin-top: .75rem; }
+.notice-change-preview { margin-block: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+.notice-change-preview h4 { margin: 0 0 .75rem; font-size: 1rem; }
+.notice-preview-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: .75rem 1rem; margin-block: .75rem; }
+.notice-preview-facts > div { min-width: 0; }
+.notice-preview-facts dt { color: var(--muted); font-size: .875rem; margin-bottom: .25rem; }
+.notice-preview-facts dd { margin: 0; color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
 .published-announcements > p { margin-top: 1rem; }
 .published-notice { padding-block: .5rem; }
 .published-notice .actions button { flex-basis: 100%; }

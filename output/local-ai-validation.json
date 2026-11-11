@@ -1,0 +1,26 @@
+{
+  "checkedAt": "2026-11-10T16:17:41.781Z",
+  "scope": "Real local HTTP and Gemini; signed test identity and admin lookup mocked. No production Firebase reads or writes.",
+  "model": "gemini-3.5-flash-lite",
+  "httpStatus": 502,
+  "providerStatus": 200,
+  "passed": false,
+  "error": "Expected values to be strictly equal:\n\n502 !== 200\n",
+  "browserVerification": {
+    "checkedAt": "2026-11-10T16:22:14.317Z",
+    "browser": "Dia",
+    "url": "http://localhost:5173/admin",
+    "passed": true,
+    "authentication": "Existing real Google admin sign-in verified by Firebase token and admins document",
+    "provider": "Real Gemini",
+    "result": "Read with AI returned a validated LRT to APU notice: 11 November 2026, 17:10 departure, 40-minute delay, heavy rain.",
+    "published": false,
+    "publicationBlocker": "Existing Firestore announcement access denied; Publish remains disabled.",
+    "screenshot": "local-ai/dia-gemini-result.png"
+  },
+  "localChecks": {
+    "testsPassed": 28,
+    "build": "passed",
+    "privateFiles": "HTTP 403 for .env and both tested .dev.vars paths"
+  }
+}

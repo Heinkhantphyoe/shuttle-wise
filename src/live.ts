@@ -79,6 +79,18 @@ export function updateActivity(db: Firestore, uid: string, command: Command) {
       return
     }
 
+    if (command.type === 'check-in') {
+      if (activity?.kind === 'queue') throw new Error('Leave your current queue first.')
+      if (activity?.kind === 'ride') {
+        const ride = (await transaction.get(doc(db, 'rides', activity.rideId))).data() as Ride | undefined
+        if (ride?.status === 'open') throw new Error('Leave your current ride first.')
+      }
+      const joinedAt = serverTimestamp()
+      transaction.set(activityRef, { kind: 'queue', route: command.route, joinedAt, eventId: eventRef.id })
+      transaction.set(eventRef, { route: command.route, joinedAt })
+      return
+    }
+
     const membership = (await transaction.get(membershipRef)).data() as RideMembership | undefined
     const rideActivity = membership ?? (activity?.kind === 'ride' ? activity : undefined)
     const currentRideRef = rideActivity ? doc(db, 'rides', rideActivity.rideId) : undefined
@@ -87,14 +99,6 @@ export function updateActivity(db: Firestore, uid: string, command: Command) {
       ? (await transaction.get(currentRideRef)).data() as Ride | undefined : undefined
 
     switch (command.type) {
-      case 'check-in': {
-        if (activity?.kind === 'queue') throw new Error('Leave your current queue first.')
-        if (activity?.kind === 'ride' && currentRide?.status === 'open') throw new Error('Leave your current ride first.')
-        const joinedAt = serverTimestamp()
-        transaction.set(activityRef, { kind: 'queue', route: command.route, joinedAt, eventId: eventRef.id })
-        transaction.set(eventRef, { route: command.route, joinedAt })
-        break
-      }
       case 'host':
       case 'join': {
         if (activity?.kind !== 'queue' || activity.route !== command.route) {

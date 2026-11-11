@@ -1,7 +1,7 @@
 export type Point = { latitude: number; longitude: number }
 
 const pickupRadiusMetres = 50
-const maxAccuracyMetres = 30
+const maxAccuracyMetres = 50
 
 function hasAccurateLocation(accuracy: number) {
   return Number.isFinite(accuracy) && accuracy >= 0 && accuracy <= maxAccuracyMetres
@@ -23,7 +23,8 @@ export async function confirmPickup(point: Point) {
   await new Promise<void>((resolve, reject) => navigator.geolocation.getCurrentPosition(
     ({ coords }) => {
       if (!hasAccurateLocation(coords.accuracy)) {
-        reject(new Error(`Your location is too imprecise. Check-in needs accuracy of ${maxAccuracyMetres} metres or better. Enable precise location and try again.`))
+        const reported = Number.isFinite(coords.accuracy) && coords.accuracy >= 0 ? `${Math.ceil(coords.accuracy)} metres` : 'unavailable'
+        reject(new Error(`Your location is too imprecise (reported accuracy: ${reported}). Check-in needs ${maxAccuracyMetres} metres or better. Enable precise location and try again.`))
       } else if (withinPickup(point, coords)) resolve()
       else reject(new Error(`Your reported location is outside the pickup area. Move within ${pickupRadiusMetres} metres of this pickup and try again.`))
     },

@@ -125,6 +125,7 @@ export function Student({ db, user }: Session) {
   const [activityReady, setActivityReady] = useState(false)
   const [membership, setMembership] = useState<RideMembership>()
   const [membershipReady, setMembershipReady] = useState(false)
+  const [membershipError, setMembershipError] = useState('')
   const [ride, setRide] = useState<Row<Ride>>()
   const [rideWatchVersion, setRideWatchVersion] = useState(0)
   const stopWatchingRide = useRef<() => void>(null)
@@ -191,11 +192,17 @@ export function Student({ db, user }: Session) {
   useEffect(() => {
     setMembership(undefined)
     setMembershipReady(false)
+    setMembershipError('')
     if (!db || !user) return
     return watchRideMembership(db, user.uid, value => {
       setMembership(value)
       setMembershipReady(true)
-    }, () => { setMembershipReady(false); setToast({ kind: 'error', message: unavailable }) })
+      setMembershipError('')
+    }, failure => {
+      setMembershipReady(false)
+      setMembershipError(failure.message)
+      setToast({ kind: 'error', message: `Grab access unavailable: ${failure.message}` })
+    })
   }, [db, user])
   const legacyRide = activity?.kind === 'ride' ? activity : undefined
   const rideId = (membership ?? legacyRide)?.rideId
@@ -270,7 +277,8 @@ export function Student({ db, user }: Session) {
   }, 'You left the ride.')
   const selected = routes[route]
   const point = pickups[route]
-  const comparison = useTravelSnapshot(db, user, route, now)
+  const comparison = useTravelSnapshot(db, user, route, now,
+    activityReady && activity?.kind === 'queue' ? activity.route : undefined)
   const ready = activityReady && !busy
   const checkInHere = activity?.kind === 'queue' && activity.route === route
   const canShare = (pickup: RouteId) => ready && membershipReady && !inRide
@@ -297,29 +305,36 @@ export function Student({ db, user }: Session) {
       {tab === 'home' && <>
         <NextDeparture comparison={comparison} now={now} />
         <section className="card queue-card">
-          <h2>{checkInHere ? 'You’re checked in' : 'Waiting at the stop?'}</h2>
-          <div role="status">
-            <p>{comparison.queueCount === undefined ? 'Live queue count is unavailable or loading.' : `${comparison.queueCount} students checked in at ${selected.origin}.`}</p>
-            {checkInHere && comparison.checkedIn && <p>Your position among checked-in students is {comparison.position}.</p>}
+          <h2>{checkInHere ? 'You’re checked in' : activity?.kind === 'queue' ? 'Checked in at another stop' : 'Waiting at the stop?'}</h2>
+          <p className="home-card-description">{checkInHere
+            ? `You’re in the shuttle queue at ${selected.origin}.`
+            : activity?.kind === 'queue'
+              ? `You’re in the ${routes[activity.route].origin} queue. Leave it before checking in at ${selected.origin}.`
+              : `Check in at ${selected.origin} to join the shuttle queue.`}</p>
+          <div className="queue-stats" role="status" aria-atomic="true">
+            <div><span>Waiting at {selected.origin}</span><strong>{comparison.queueCount ?? '—'}</strong></div>
+            {checkInHere && comparison.checkedIn && <div><span>Your position</span><strong>#{comparison.position}</strong></div>}
           </div>
-          {!point && <p>The {selected.origin} pickup coordinates are unconfirmed.</p>}
-          {activity?.kind === 'queue'
+          {comparison.queueCount === undefined && <p>Queue unavailable.</p>}
+          {!point && <p>Pickup location unavailable.</p>}
+          <div className="home-card-actions">{activity?.kind === 'queue'
             ? <div className="actions">
               {checkInHere && <button disabled={!ready} onClick={() => void act(
                 () => send({ type: 'board', route, eventId: activity.eventId }),
                 'You’re off the queue. Have a good trip!',
               )}>I got the bus</button>}
               <button className="secondary" disabled={!ready} onClick={() => void act(() => send({ type: 'leave-queue' }), 'Queue spot released.')}>
-                Leave {checkInHere ? 'queue' : `${routes[activity.route].origin} queue`}
+                Leave queue
               </button>
             </div>
             : <button disabled={!ready || !point || (!!legacyRide && inRide)} onClick={() => void checkIn()}>
-              Allow location &amp; check in
-            </button>}
-          {legacyRide && inRide && <p>Manage or leave your current Grab group before checking in.</p>}
+              Check in
+            </button>}</div>
+          {legacyRide && inRide && <p>Leave your Grab group to check in.</p>}
         </section>
-        <section className="card grab-prompt"><h2>Share a Grab to {selected.destination}</h2><p>Find a group with up to four people.</p>
-          <FindRideLink onClick={event => navigate(event, 'find')} />
+        <section className="card grab-prompt"><h2>Share a Grab to {selected.destination}</h2>
+          <p className="home-card-description">Find a group of up to 4 people and split the fare. Book and pay in Grab.</p>
+          <div className="home-card-actions"><FindRideLink onClick={event => navigate(event, 'find')} /></div>
         </section>
       </>}
       {tab === 'timetable' && <TravelTimetable comparison={comparison} now={now} />}
@@ -364,15 +379,23 @@ export function Student({ db, user }: Session) {
             <section className="card">
               <h2>Host a ride</h2>
               <p>Check in at this pickup before hosting. Book and pay in Grab.</p>
+              {activityReady && !checkInHere && <p className="form-help">{activity?.kind === 'queue'
+                ? `You are checked in at ${routes[activity.route].origin}. Select that route to host there.`
+                : 'Check in on Home first to enable Create ride.'}</p>}
+              {checkInHere && !membershipReady && <p className="form-help">{membershipError
+                ? 'Grab access is unavailable. Your check-in is kept. Refresh to retry.'
+                : 'Checking your Grab access…'}</p>}
               <form onSubmit={event => {
                 event.preventDefault()
                 const data = new FormData(event.currentTarget)
                 setPendingShare({
                   action: 'Create',
                   route,
-                  submit: () => send({
-                    type: 'host', route, fare: fareFrom(data.get('fare')), name: String(data.get('name')).trim(),
-                  }),
+                  submit: async () => {
+                    if (!point) throw new Error('This pickup point is unconfirmed.')
+                    await confirmPickup(point)
+                    await send({ type: 'host', route, fare: fareFrom(data.get('fare')), name: String(data.get('name')).trim() })
+                  },
                   message: 'Your ride is open.',
                 })
               }}>
@@ -402,7 +425,7 @@ export function Student({ db, user }: Session) {
     </section>
     <nav className="student-nav" aria-label="Student navigation">
       <div className="student-toasts">
-        <div role="status">{busy ? <p className="student-toast">Updating your trip…</p> : toast?.kind === 'success' && <p className="student-toast">{toast.message}</p>}</div>
+        <div role="status">{toast?.kind === 'success' && <p className="student-toast">{toast.message}</p>}</div>
         <div role="alert">{toast?.kind === 'error' && <p className="student-toast error">{toast.message}</p>}</div>
       </div>
       {(Object.keys(tabs) as Tab[]).map(id => <a key={id} href={viewUrl(id)} aria-current={tab === id ? 'page' : undefined}

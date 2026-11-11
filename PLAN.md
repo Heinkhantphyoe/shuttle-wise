@@ -9,7 +9,7 @@
 ## Student and admin views
 
 - Port the [existing student prototype](student-preview.html) to **React + Vite + TypeScript** and deploy it on **Firebase Hosting**. Use anonymous Firebase Auth and Firestore for live queue and Grab listings. Use Firestore transactions and rules to enforce one active queue entry per identity, the four-person ride cap, and atomic queue-to-ride switching.
-- Request a fresh location at check-in. Allow it only when the student is within **30 metres of the selected route’s pickup point** and reported accuracy is **30 metres or better**. Block check-in for an out-of-range, denied, timed-out, or inaccurate reading. Discard raw coordinates. On Spark, this browser check can be bypassed by a modified client.
+- Request a fresh location at check-in. Allow it only when the student is within **50 metres of the selected route’s pickup point** and reported accuracy is **50 metres or better**. Use a single location reading; do not watch for repeated updates. Block check-in for an out-of-range, denied, timed-out, or inaccurate reading. Discard raw coordinates. On Spark, this browser check can be bypassed by a modified client.
 - Show the live count, position among checked-in students, and next scheduled departure. Give checked-in students an **I got the bus** button that ends their check-in and updates the live count.
 - Protect `/admin` with Google sign-in and a Firebase UID allowlist enforced by Firestore rules. Show live queues and historical trends for both routes. Keep labeled synthetic history separate from live check-ins. Generate briefings from computed peak windows, volumes, and period comparisons.
 

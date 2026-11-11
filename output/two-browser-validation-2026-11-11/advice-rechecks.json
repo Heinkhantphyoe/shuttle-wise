@@ -1,0 +1,56 @@
+{
+  "checkedAt": "2026-11-11T09:24:11.602Z",
+  "results": [
+    {
+      "passed": true,
+      "advice": {
+        "outlook": "compare_both",
+        "explanation": "The next departure operates normally while a later trip faces delays. You may compare the shuttle and ride options to decide.",
+        "evidenceIds": [
+          "schedule:V1_20261022",
+          "test-delay@1",
+          "room:test-cheapest"
+        ],
+        "cautionCodes": [
+          "estimate_only",
+          "data_unavailable"
+        ]
+      },
+      "raw": "{\n  \"outlook\": \"compare_both\",\n  \"explanation\": \"The next departure operates normally while a later trip faces delays. You may compare the shuttle and ride options to decide.\",\n  \"evidenceIds\": [\n    \"schedule:V1_20261022\",\n    \"test-delay@1\",\n    \"room:test-cheapest\"\n  ],\n  \"cautionCodes\": [\n    \"estimate_only\",\n    \"data_unavailable\"\n  ]\n}"
+    },
+    {
+      "passed": true,
+      "advice": {
+        "outlook": "compare_both",
+        "explanation": "You can compare the next bus and the ride option before deciding.",
+        "evidenceIds": [
+          "schedule:V1_20261022",
+          "test-delay@1",
+          "room:test-cheapest"
+        ],
+        "cautionCodes": [
+          "estimate_only",
+          "data_unavailable"
+        ]
+      },
+      "raw": "{\n  \"outlook\": \"compare_both\",\n  \"explanation\": \"You can compare the next bus and the ride option before deciding.\",\n  \"evidenceIds\": [\n    \"schedule:V1_20261022\",\n    \"test-delay@1\",\n    \"room:test-cheapest\"\n  ],\n  \"cautionCodes\": [\n    \"estimate_only\",\n    \"data_unavailable\"\n  ]\n}"
+    },
+    {
+      "passed": true,
+      "advice": {
+        "outlook": "compare_both",
+        "explanation": "Both the campus shuttle and a ride service remain viable choices for your trip. Review the schedule and options to decide which service best fits your plans.",
+        "evidenceIds": [
+          "schedule:V1_20261022",
+          "test-delay@1",
+          "room:test-cheapest"
+        ],
+        "cautionCodes": [
+          "estimate_only",
+          "data_unavailable"
+        ]
+      },
+      "raw": "{\n  \"outlook\": \"compare_both\",\n  \"explanation\": \"Both the campus shuttle and a ride service remain viable choices for your trip. Review the schedule and options to decide which service best fits your plans.\",\n  \"evidenceIds\": [\n    \"schedule:V1_20261022\",\n    \"test-delay@1\",\n    \"room:test-cheapest\"\n  ],\n  \"cautionCodes\": [\n    \"estimate_only\",\n    \"data_unavailable\"\n  ]\n}"
+    }
+  ]
+}

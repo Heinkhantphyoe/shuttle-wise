@@ -8,7 +8,7 @@ import { parseGuidance, tryProviders, validAIRequest } from '../src/ai-contract.
 const timestamp = value => Date.parse(value + '+08:00')
 
 test('both timetables are sorted and have the expected ranges', () => {
-  for (const [route, count, first, last] of [['apu', 39, '10:35', '21:45'], ['lrt', 51, '07:30', '18:20']]) {
+  for (const [route, count, first, last] of [['apu', 39, '10:35', '21:45'], ['lrt', 40, '07:30', '18:20']]) {
     const { departures } = routes[route]
     assert.equal(new Set(departures).size, count)
     assert.equal(departures.length, count)
@@ -28,8 +28,9 @@ test('both timetables are sorted and have the expected ranges', () => {
 
 test('pickup validation rejects poor accuracy and readings outside the selected pickup', () => {
   const point = { latitude: 3, longitude: 101 }
-  assert.equal(withinPickup(point, { ...point, accuracy: 30 }), true)
-  assert.equal(withinPickup(point, { ...point, accuracy: 30.01 }), false)
+  assert.equal(withinPickup(point, { ...point, accuracy: 50 }), true)
+  assert.equal(withinPickup(point, { ...point, accuracy: 35 }), true)
+  assert.equal(withinPickup(point, { ...point, accuracy: 50.01 }), false)
   assert.equal(withinPickup(point, { ...point, latitude: 3.00046, accuracy: 1 }), false)
   assert.equal(withinPickup(point, { ...point, latitude: 3.00044, accuracy: 1 }), true)
 })
@@ -37,7 +38,7 @@ test('pickup validation rejects poor accuracy and readings outside the selected 
 test('check-in requests a fresh reading and rejects denied or timed-out location', async t => {
   const point = { latitude: 3, longitude: 101 }
   const lrt = { latitude: 3.05, longitude: 101.7 }
-  let result = { coords: { ...point, accuracy: 10 } }
+  let result = { coords: { ...point, accuracy: 35 } }
   Object.defineProperty(navigator, 'geolocation', { configurable: true, value: {
     getCurrentPosition(success, failure, options) {
       assert.deepEqual(options, { enableHighAccuracy: true, maximumAge: 0, timeout: 12_000 })
@@ -51,8 +52,8 @@ test('check-in requests a fresh reading and rejects denied or timed-out location
   result = { coords: { ...lrt, accuracy: 10 } }
   await confirmPickup(lrt)
   await assert.rejects(confirmPickup(point), /within 50 metres/)
-  result = { coords: { ...lrt, accuracy: 31 } }
-  await assert.rejects(confirmPickup(lrt), /too imprecise/)
+  result = { coords: { ...lrt, accuracy: 51 } }
+  await assert.rejects(confirmPickup(lrt), /reported accuracy: 51 metres/)
   result = { code: 1 }
   await assert.rejects(confirmPickup(point), /denied/)
   result = { code: 3 }

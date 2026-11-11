@@ -1,4 +1,22 @@
-# Real Gemini verification — 8 November 2026
+# Latest follow-up — 11 November 2026
+
+The final full Gemini suite passed **12/12** after the student-advice prompt repair. Three targeted advice rechecks also passed. See [the Dia/Safari follow-up report](../two-browser-validation-2026-11-11/RESULTS.md) for the current browser results, notice-expiry repair and remaining physical/deployment limits. Earlier results below describe the previous run.
+
+# Real Gemini verification
+
+## Latest checks — 11 November 2026
+
+The latest complete real Gemini run passed **10/12** checks. Suspension returned a provider failure and capacity timed out. A targeted capacity retry passed; suspension timed out again. Admin briefing, both directions, image reading and student explanation passed. See [the deep test report](../deep-validation-2026-11-11/RESULTS.md) for current app, emulator and Dia results. The current `results.json` supersedes the older runs below. No public deployment was performed.
+
+## Historical checks — 10 November 2026
+
+- App/Worker tests: **27/27 passed**. Firestore emulator: **10/10 passed**, including separate admin/student clients publishing a delay, applying it only to the checked-in direction, switching direction, withdrawal and leaving the queue. Production build passed with the existing large-bundle warning.
+- Latest complete real-provider run: **9/11 passed**. Cancellation and suspension requests returned provider errors. The previous run passed those cases but failed the first extraction request; failures are intermittent. [results.json](results.json) contains the latest complete run, not the historical all-pass run below.
+- Separate real-provider check of the user's exact message, “Today, 5:10 pm bus will be 40 mins late because of the heavy rain.”, with LRT → APU selected: passed. Application calculation produced 17:50 for the 17:10 departure and retained 17:20 as the next operating bus. Before check-in, no temporary notice was visible.
+- Targeted suspension retry passed. A targeted cancellation retry returned an unresolved service date despite the word “Today”; publication correctly remained blocked. No invalid result was published.
+- The browser still has neither `VITE_AI_WORKER_URL` nor `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY`. The Gemini secret exists only in ignored `worker/.dev.vars`. Hosted authentication, App Check, notice permissions and end-to-end publication remain unverified and require the project owner's setup described in AI_SETUP.md. No deployment or production data changes were performed.
+
+## Historical verification — 8 November 2026
 
 Provider: Google Gemini Developer API. Model: `gemini-3.5-flash-lite`.
 
@@ -6,7 +24,7 @@ The key was accepted by Google and real generation succeeded. `gemini-2.5-flash`
 
 ## Real provider checks: 11/11 passed
 
-Command: `npm run test:ai:live`. See [actual responses](results.json).
+Command: `npm run test:ai:live`. The current JSON report above supersedes this historical run.
 
 | Check | Actual result |
 | --- | --- |

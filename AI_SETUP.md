@@ -1,18 +1,36 @@
 # AI travel updates: setup and use
 
+The active Firebase project is now **`shutterbus`** (your project), with a Standard Firestore database in Singapore (`asia-southeast1`). Google and anonymous sign-in are enabled, localhost is authorised, the tested project rules are published, and your Google account is allowlisted as an app admin. `.env`, `.firebaserc` and the Worker Firebase identifiers point to this project.
+
+This is a fresh setup, as requested after the old project denied access. **No old records or Authentication users were copied from `shuttlewise-e77bf`.** That project was not modified. A private configuration rollback backup is under ignored `.firebase/migration-2026-11-11/`; it is not a database backup. Existing users must sign in to the new project. Collections are created by valid app actions rather than empty placeholder records.
+
+## Easiest setup on this computer
+
+Run `npm run dev` from the `shuttle-wise` folder, then open the Local URL printed in the terminal and go to `/admin`. Sign in with an allowlisted Google admin account, choose a direction, enter the update and click **Read with AI**. Restart an already-running dev server once after adding this configuration.
+
+The development server now runs the AI endpoint itself. It reads the existing private key from ignored `worker/.dev.vars`, so no Worker URL or reCAPTCHA site key is needed for this local flow. It reuses the same Gemini extraction, image limits and response validation as the Worker. The key is never included in the browser bundle; the server also blocks requests for `.env`, `.dev.vars` and private `.firebase` backups.
+
+Verified in Dia on 11 November 2026: admin sign-in, real Gemini notice reading, admin briefing, publication and withdrawal worked. The temporary test notices were withdrawn. The unchecked-in student, queue and Grab list loaded without permission errors. Real GPS check-in was rejected at 143-metre reported accuracy; the 50-metre requirement was preserved. Live checked-in host/join remains unverified. Automated results and remaining provider failures are recorded in [the deep test report](output/deep-validation-2026-11-11/RESULTS.md).
+
+This endpoint works only on loopback (`localhost` / `127.0.0.1` / `::1`), requires a matching browser Origin, verifies Firebase sign-in and Google admin allowlisting, and limits each admin to six requests per minute. It supports admin notice reading, numeric-only admin briefing and setup status. Local Firebase emulator mode remains separate and does not use this endpoint. The production build does not include the endpoint or enable local mode; the hosted Worker still requires App Check.
+
+**Read with AI** only prepares a draft. **Publish announcement** still uses the existing Firestore permissions and does not write the standard timetable. If publication or announcement loading says “Missing or insufficient permissions”, the Firebase owner must deploy the matching rules and confirm admin access. The Gemini key cannot grant database permissions. Students receive published changes only while checked in on the affected direction.
+
+## Hosted setup
+
 Real Gemini tests passed on 8 November 2026. The key is saved only in the ignored local `worker/.dev.vars` file. The Worker model is `gemini-3.5-flash-lite`, which successfully read text and a PNG and produced validated student advice.
 
-The live website is **not connected yet**. Firebase project `shuttlewise-e77bf` belongs to your friend. The supplied `.env` contains the web app configuration; it does not grant project administration or deployment access. Cloudflare CLI is also not signed in. No remote secret or deployment has been created.
+The local app is connected to your new Firebase project. A public Hosting/Cloudflare deployment has not been performed. The local-only AI endpoint is not part of the production build; use the hosted steps below when publishing the website.
 
 ## Remaining steps for the project owner
 
-Your friend can do these steps, or grant your Google account the needed project access. Do not share account passwords.
+These steps apply to your own `shutterbus` project. Do not share account passwords.
 
-1. In Firebase project `shuttlewise-e77bf`, register web app `1:61369272200:web:2b8c66ed166a780d4e1c3d` with **App Check → reCAPTCHA Enterprise**. Allow the actual website domain and return the **public site key** for `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY`.
-2. Confirm your Google admin account has its own `admins/{firebaseUid}` document. Keep the current Firebase project and data.
+1. Register web app `1:365071100344:web:91a5dd492698a4deed074d` with **App Check → reCAPTCHA Enterprise**. Allow the actual website domain and add the **public site key** as `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY`.
+2. Your current Google admin is already allowlisted. Only add other `admins/{firebaseUid}` documents for explicitly authorised Google accounts.
 3. Sign in to the Cloudflare account that will own this Worker with `npx wrangler login`. Check `APP_ORIGIN` in `worker/wrangler.jsonc` matches the actual website origin. Deploy the Worker, then run the secret command below and enter the Gemini key privately. Return the Worker URL for `VITE_AI_WORKER_URL`.
 4. Add those two public values to `.env.local`, run `npm run build`, and deploy the matching frontend and Firestore rules using the owner's Firebase access. The exact commands are below.
-5. At `/admin`, open **Transport announcements → AI setup → Check AI setup**, then read a real update. Check the published result in a separate student session. This hosted check is still pending.
+5. At `/admin`, use **Transport announcements → Admin update** to read a real update. Check the published result in a separate student session. This hosted check is still pending. There is no AI setup panel in the dashboard.
 
 You can already repeat the real provider tests on this computer:
 
@@ -20,7 +38,7 @@ You can already repeat the real provider tests on this computer:
 npm run test:ai:live
 ```
 
-This opt-in command sends public test fixtures to Gemini through the same extraction and advice functions the Worker uses. It writes results to `output/ai-live-validation/results.json`. It does not publish notices or use your friend's Firestore data. These API calls use the key's normal quota. See [the verification record](output/ai-live-validation/RESULTS.md).
+This opt-in command sends public test fixtures to Gemini through the same extraction and advice functions the Worker uses. It writes results to `output/ai-live-validation/results.json`. It does not publish notices or use Firestore records. These API calls use the key's normal quota. See [the verification record](output/ai-live-validation/RESULTS.md).
 
 ## 1. Where to add the Gemini API key
 
@@ -36,7 +54,7 @@ Enter the key in that prompt. Do not paste it into chat or commit it.
 
 For local Worker development only, copy `worker/.dev.vars.example` to `worker/.dev.vars` and enter the key there. The real file is ignored by Git.
 
-The new travel features use Gemini on the Worker. The existing admin history briefing still uses Firebase AI Logic first and its existing OpenRouter fallback. If you use that fallback, its secret is:
+The new travel features use Gemini on the Worker. Local admin history briefing uses the same authenticated local Gemini endpoint. The hosted briefing keeps Firebase AI Logic first and its existing OpenRouter fallback. If you use that fallback, its secret is:
 
 ```sh
 npx wrangler secret put OPENROUTER_API_KEY --config worker/wrangler.jsonc
@@ -80,12 +98,12 @@ npm run build
 npm run test:rules
 npx wrangler deploy --config worker/wrangler.jsonc
 npx wrangler secret put GEMINI_API_KEY --config worker/wrangler.jsonc
-npx firebase-tools deploy --only firestore:rules,hosting --project shuttlewise-e77bf
+npx firebase-tools deploy --only firestore:rules,hosting --project shutterbus
 ```
 
 Deployment is a separate action. Deploy the new Firestore rules with the matching frontend. Keep the existing ride transaction rules; do not make private ride rosters public.
 
-Open **Admin → Transport announcements → AI setup → Check AI setup**. It checks whether Gemini is configured and App Check is valid without returning secrets. Then read a small real notice to verify the provider connection. Setup status alone does not prove the API key works or has quota.
+Open **Admin → Transport announcements → Admin update** and read a small real notice to verify the provider connection. Configuration and server failures appear as temporary toast messages, using the student dashboard's feedback style. Setup instructions stay in this file; there is no AI setup panel in the dashboard.
 
 The old briefing uses POST `/`. New endpoints use POST `/ai/notice-extract`, `/ai/journey-advice`, and `/ai/status`. Student advice accepts only route and snapshot identity; the Worker reads permitted Firestore facts using the student's token. Admin extraction and setup status require an allowlisted Google admin.
 
@@ -102,9 +120,11 @@ A selected direction controls which students receive the change. AI cannot silen
 
 Conflicting notices must be explicitly replaced or corrected. **Edit update** loads the existing facts as a plain message in the same form; read it again before publishing the correction. **Withdraw** removes the temporary effect.
 
-Students see the relevant notice above their travel options. Original and reported revised times appear together. The countdown updates with Malaysia time. A later scheduled bus may operate before a delayed one. An incoming bus delay never automatically changes its opposite-direction return service.
+Students see temporary notices and revised times only after checking in on the selected affected direction. Before check-in, after leaving the queue, or when browsing the other direction, they see the standard timetable. Home and Timetable use the same rule. Original and reported revised times appear together. The countdown updates with Malaysia time. A later scheduled bus may operate before a delayed one. An incoming bus delay never automatically changes its opposite-direction return service. If checked-in students cannot load notices, the app labels the displayed times as the standard timetable.
 
 Only reviewed notices are saved through the announcement form. The standard timetable stays in the code, with the official source and effective date. Withdrawal and expiry remove temporary effects without editing that dataset. Passing a scheduled time never removes a student's check-in.
+
+Notices with known affected times now end automatically after the last affected original or revised minute, using Malaysia time. For example, a 5:10 pm bus delayed by 40 minutes stays updated through 5:50 pm and returns to the standard timetable at 5:51 pm. Each direction ends independently. This also applies to older saved notices whose stored expiry was midnight. Unknown delays without a confirmed end keep their stated expiry. Expired notices disappear from students and the admin's active list; their saved records remain in the admin's expired history.
 
 The admin announcement form has no bus-capacity, fare-range, rush-hour, or source-setting inputs. UI fares use RM; stored ride fares remain integer sen. The next-departure countdown works from the standard timetable and confirmed notices without this configuration.
 

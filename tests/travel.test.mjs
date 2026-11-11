@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { adviceFacts, compareJourney, conflictingNoticeIds, effectiveSchedule, fareRange } from '../src/journey.ts'
+import { adviceFacts, compareJourney, compareStudentJourney, conflictingNoticeIds, effectiveSchedule, fareRange } from '../src/journey.ts'
 import { continuousService, routes, serviceDate, timeOn } from '../src/schedule.ts'
-import { noticeErrors, parseAdvice, parseExtraction, scopeExtraction, validSettings } from '../src/travel-contract.ts'
-import { extractionResult, groundExtraction, validateImage } from '../worker/travel.ts'
+import { noticeErrors, noticeExpiresAt, parseAdvice, parseExtraction, scopeExtraction, validSettings } from '../src/travel-contract.ts'
+import { extractionResult, groundExtraction, readTransportUpdate, validateImage } from '../worker/travel.ts'
 
 const date = '2026-11-09'
 const at = time => timeOn(date, time)
@@ -18,6 +18,58 @@ const room = (id, fare, count = 2, route = 'apu', status = 'open') => ({ id, far
 const queue = (position, now = at('14:00')) => Array.from({ length: position }, (_, index) => ({ id: index === position - 1 ? 'me' : `person-${index}`, joinedAt: now - (position - index) * 1000 }))
 const compare = (patch = {}) => compareJourney({ route: 'apu', uid: 'me', now: at('14:00'), queue: [], rooms: [], notices: [], settings: settings(), ...patch })
 
+test('Gemini retries temporary failures once, without retrying quota errors or invalid answers', async t => {
+  const text = 'On 9 November 2026, the 2:30 pm APU to LRT departure is 40 minutes late because of traffic.'
+  const value = { title: 'Delay', summary: 'This departure is delayed.', reason: 'Traffic', serviceDate: date,
+    changes: [change()], unresolved: [], evidence: [text] }
+  let statuses = [], calls = 0, invalid = false, firstSignal
+  t.mock.method(globalThis, 'fetch', async (_url, options) => {
+    calls++
+    firstSignal ??= options.signal
+    assert.equal(options.signal, firstSignal)
+    const status = statuses.shift() ?? 200
+    return status !== 200 ? new Response(null, { status }) : Response.json({ candidates: [{ finishReason: 'STOP',
+      content: { parts: [{ text: invalid ? '{bad json' : JSON.stringify(value) }] } }] })
+  })
+  const run = () => readTransportUpdate({ direction: 'apu', text }, { GEMINI_MODEL: 'test', GEMINI_API_KEY: 'fake' }, at('14:00'))
+  statuses = [503, 200]
+  assert.equal((await run()).draft.changes[0].delayMinutes, 40)
+  assert.equal(calls, 2)
+  for (const [responses, expectedCalls] of [[[500, 503], 2], [[429], 1], [[403], 1]]) {
+    statuses = [...responses]; calls = 0; firstSignal = undefined
+    await assert.rejects(run, /HTTP/)
+    assert.equal(calls, expectedCalls)
+  }
+  statuses = [200]; calls = 0; firstSignal = undefined; invalid = true
+  await assert.rejects(run)
+  assert.equal(calls, 1)
+})
+
+test('student updates require check-in on the selected affected route and disappear after leaving', () => {
+  const original = JSON.stringify(routes)
+  const both = notice({ changes: [change(), change({ route: 'lrt', departures: ['14:25'] })] })
+  for (const route of ['apu', 'lrt']) {
+    const input = { route, uid: 'me', now: at('14:00'), queue: queue(1), notices: [both] }
+    const departure = at(route === 'apu' ? '14:30' : '14:25')
+    const getTrip = result => result.schedule.trips.find(trip => trip.original === departure)
+    for (const checkIn of [undefined, route === 'apu' ? 'lrt' : 'apu']) {
+      const result = compareStudentJourney(input, checkIn)
+      assert.equal(result.schedule.visible.length, 0)
+      assert.equal(getTrip(result).time, departure)
+    }
+    const checkedIn = compareStudentJourney(input, route)
+    assert.equal(checkedIn.schedule.visible.length, 1)
+    assert.equal(getTrip(checkedIn).time, departure + 40 * 60_000)
+    assert.notEqual(checkedIn.fingerprint, compareStudentJourney(input).fingerprint)
+    for (const status of ['withdrawn', 'superseded']) {
+      assert.equal(compareStudentJourney({ ...input, notices: [{ ...both, status }] }, route).schedule.visible.length, 0)
+    }
+    assert.equal(compareStudentJourney({ ...input, notices: [{ ...both, expiresAt: input.now }] }, route).schedule.visible.length, 0)
+  }
+  assert.equal(compareStudentJourney({ route: 'lrt', uid: 'me', now: at('14:00'), notices: [notice()] }, 'lrt').schedule.visible.length, 0)
+  assert.equal(JSON.stringify(routes), original)
+})
+
 test('a forty-minute delay changes only its original trip and never mutates the base timetable', () => {
   const original = JSON.stringify(routes)
   const before = effectiveSchedule('apu', at('14:00'), [], settings())
@@ -30,6 +82,68 @@ test('a forty-minute delay changes only its original trip and never mutates the 
   assert.ok(after.future.findIndex(trip => trip.original === at('14:45')) < after.future.findIndex(trip => trip.original === at('14:30')))
   assert.equal(after.future.filter(trip => trip.time === at('15:10')).length, 2)
   assert.equal(JSON.stringify(routes), original)
+})
+
+test('a 5:10 pm delay ends after the 5:50 pm minute and restores the original timetable without a database write', () => {
+  const original = JSON.stringify(routes)
+  const delayed = notice({ changes: [change({ route: 'lrt', departures: ['17:10'] })] })
+  const expires = at('17:51')
+  assert.equal(noticeExpiresAt(delayed), expires)
+  const input = { route: 'lrt', uid: 'me', notices: [delayed] }
+  const before = compareStudentJourney({ ...input, now: expires - 1 }, 'lrt')
+  assert.equal(before.schedule.visible.length, 1)
+  assert.equal(before.schedule.trips.find(trip => trip.original === at('17:10')).time, at('17:50'))
+  for (const now of [expires, at('18:00'), timeOn('2026-11-10', '17:00')]) {
+    const after = compareStudentJourney({ ...input, now }, 'lrt')
+    assert.equal(after.schedule.visible.length, 0)
+    assert.deepEqual(after.schedule.trips, effectiveSchedule('lrt', now, []).trips)
+  }
+  const after = compareStudentJourney({ ...input, now: expires }, 'lrt')
+  assert.notEqual(after.fingerprint, before.fingerprint)
+  assert.equal(JSON.stringify(routes), original)
+  assert.equal(delayed.status, 'published')
+})
+
+test('notice expiry covers multiple departures, each direction, windows, replacements and unknown durations', () => {
+  const both = notice({ changes: [change({ departures: ['17:10'] }), change({ route: 'lrt', departures: ['18:20'] })] })
+  assert.equal(noticeExpiresAt(both), at('19:01'))
+  assert.equal(noticeExpiresAt(both, 'apu'), at('17:51'))
+  assert.equal(effectiveSchedule('apu', at('17:51'), [both]).visible.length, 0)
+  assert.equal(effectiveSchedule('lrt', at('17:51'), [both]).visible.length, 1)
+  const cases = [
+    [change({ departures: ['17:10', '17:20'] }), '18:01'],
+    [change({ revisedTime: '16:00', delayMinutes: null }), '16:01'],
+    [change({ type: 'replacement', revisedTime: '15:00', delayMinutes: null }), '15:01'],
+    [change({ type: 'cancel', delayMinutes: null }), '14:31'],
+    [change({ type: 'capacity', delayMinutes: null, capacity: 20 }), '14:31'],
+    [change({ type: 'suspend', departures: [], delayMinutes: null, start: '14:00', end: '16:00' }), '16:01'],
+    [change({ departures: [], start: '14:00', end: '16:00' }), '16:41'],
+    [change({ delayMinutes: null }), '23:59'],
+    [change({ type: 'info', departures: [], delayMinutes: null }), '23:59'],
+  ]
+  for (const [changed, end] of cases) {
+    const value = notice({ changes: [changed] })
+    assert.equal(noticeExpiresAt(value), at(end), JSON.stringify(changed))
+    assert.equal(effectiveSchedule('apu', at(end) - 1, [value]).visible.length, 1)
+    assert.equal(effectiveSchedule('apu', at(end), [value]).visible.length, 0)
+  }
+})
+
+test('extraction derives service expiry and never guesses an unknown delay end', () => {
+  const value = { title: 'Delay', summary: 'The bus is delayed.', reason: 'Traffic', serviceDate: date,
+    changes: [change({ route: 'lrt', departures: ['17:10'] })], unresolved: [], evidence: ['40 minutes late'] }
+  const extracted = extractionResult(value, at('16:00'))
+  assert.equal(extracted.draft.expiresAt, at('17:51'))
+  assert.deepEqual(noticeErrors(extracted.draft), [])
+  const ended = extractionResult(value, at('18:00'))
+  assert.equal(ended.draft.expiresAt, at('17:51'))
+  assert.ok(ended.unresolved.some(issue => issue.includes('already ended')))
+  assert.deepEqual(noticeErrors(ended.draft), [])
+  const unknown = extractionResult({ ...value, changes: [change({ delayMinutes: null })] }, at('16:00'))
+  assert.equal(unknown.draft.expiresAt, timeOn('2026-11-10', '00:00'))
+  const unsupported = groundExtraction(extracted, 'The bus is delayed; duration unknown.', false)
+  assert.equal(unsupported.draft.changes[0].delayMinutes, null)
+  assert.equal(unsupported.draft.expiresAt, timeOn('2026-11-10', '00:00'))
 })
 
 test('each direction is isolated and both directions need explicit changes', () => {
@@ -139,6 +253,22 @@ test('continuous service and Malaysia calendar boundaries do not invent fixed de
   const weekend = compare({ now: timeOn('2026-11-08', '14:00') })
   assert.equal(weekend.schedule.future.length, 0)
   assert.equal(weekend.schedule.nextWeekday, at('10:35'))
+})
+
+test('upcoming continuous service is a start window, never fixed morning trips or a boarding estimate', () => {
+  const input = { route: 'lrt', now: at('06:00'), queue: queue(1, at('05:59')) }
+  const before = compare(input)
+  assert.equal(before.schedule.continuousStartsAt, at('07:30'))
+  assert.equal(before.schedule.next, undefined)
+  assert.equal(before.boarding, undefined)
+  assert.ok(before.schedule.trips.every(trip => trip.original >= at('08:45')))
+  assert.ok(!routes.lrt.departures.includes('07:35'))
+  assert.equal(compare({ ...input, now: at('08:45') }).schedule.next.original, at('08:45'))
+  assert.equal(compare({ ...input, now: timeOn('2026-11-08', '06:00') }).schedule.continuousStartsAt, undefined)
+  const suspension = notice({ changes: [change({ route: 'lrt', type: 'suspend', departures: [], delayMinutes: null, start: '07:30', end: '08:45' })] })
+  assert.equal(compare({ ...input, notices: [suspension] }).schedule.continuousSuspended, true)
+  const { id, status, version, updatedAt, ...morningDraft } = notice({ changes: [change({ route: 'lrt', departures: ['07:30'] })] })
+  assert.ok(noticeErrors(morningDraft).some(error => error.includes('continuous')))
 })
 
 test('a Friday delay remains in the effective timetable after Saturday midnight', () => {

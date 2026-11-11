@@ -3,20 +3,25 @@ import { getToken } from 'firebase/app-check'
 import { appCheck, useEmulators } from './firebase'
 import { parseAdvice, parseExtraction, scopeExtraction, type AffectedDirection, type Extraction } from './travel-contract'
 import type { RouteId } from './schedule'
+import { parseGuidance, type AIRequest } from './ai-contract'
 
 const workerUrl = import.meta.env.VITE_AI_WORKER_URL
-export const travelAIConfigured = !!workerUrl && !!appCheck && !useEmulators
+export const localAI = import.meta.env.DEV && import.meta.env.VITE_LOCAL_AI === true
+  && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) && !useEmulators
+export const travelAIConfigured = localAI || !!workerUrl && !!appCheck && !useEmulators
 export type NoticeImage = { mimeType: 'image/jpeg' | 'image/png'; data: string }
 
 async function request(path: string, input: object, user: User, signal?: AbortSignal) {
-  if (!workerUrl || !appCheck || useEmulators) throw new Error('AI is not configured here yet. Follow AI_SETUP.md to enable reading admin updates. Existing student travel options still work.')
-  const [idToken, verification] = await Promise.all([user.getIdToken(), getToken(appCheck)])
-  const base = new URL(workerUrl)
-  base.pathname = path
+  if (useEmulators) throw new Error('AI reading is unavailable in the local Firebase demo.')
+  if (!localAI && !workerUrl) throw new Error('AI server is not connected. Add VITE_AI_WORKER_URL and restart the app. See AI_SETUP.md.')
+  if (!localAI && !appCheck) throw new Error('AI verification is not configured. Add VITE_RECAPTCHA_ENTERPRISE_SITE_KEY and restart the app. See AI_SETUP.md.')
+  const [idToken, verification] = await Promise.all([user.getIdToken(), localAI ? undefined : getToken(appCheck!)])
+  const base = new URL(localAI ? location.origin : workerUrl!)
+  base.pathname = localAI ? path.replace('/ai/', '/__local-ai/') : path
   base.search = ''
   base.hash = ''
   const response = await fetch(base, {
-    method: 'POST', headers: { Authorization: `Bearer ${idToken}`, 'X-Firebase-AppCheck': verification.token, 'Content-Type': 'application/json' },
+    method: 'POST', headers: { Authorization: `Bearer ${idToken}`, ...(verification ? { 'X-Firebase-AppCheck': verification.token } : {}), 'Content-Type': 'application/json' },
     body: JSON.stringify(input), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30_000)]) : AbortSignal.timeout(30_000),
   })
   const result = await response.json()
@@ -36,6 +41,11 @@ export async function journeyAdvice(route: RouteId, fingerprint: string, evidenc
 
 export async function travelAIStatus(user: User) {
   return await request('/ai/status', {}, user) as { geminiConfigured: boolean; model: string; appCheckVerified: boolean }
+}
+
+export async function localBriefing(input: AIRequest, user: User) {
+  if (!localAI) throw new Error('Local briefing is unavailable.')
+  return parseGuidance(JSON.stringify(await request('/ai/briefing', input, user)))
 }
 
 export async function prepareNoticeImage(file: File): Promise<NoticeImage> {

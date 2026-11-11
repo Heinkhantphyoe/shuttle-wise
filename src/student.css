@@ -100,11 +100,33 @@
 .student-app .notice { background: var(--tint); color: var(--ink); }
 
 .transport-announcements { border-inline-start: 4px solid var(--blue); }
-.announcement-item { margin-top: 1rem; }
-.announcement-item + .announcement-item { border-top: 1px solid var(--line); padding-top: 1rem; }
+.announcement-item { margin-top: 1.25rem; }
+.announcement-item + .announcement-item { border-top: 1px solid var(--line); padding-top: 1.25rem; }
+.announcement-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; color: var(--muted); font-size: .875rem; }
+.announcement-status { padding: .25rem .625rem; border-radius: .375rem; background: var(--tint); color: var(--blue); font-weight: 600; }
+.student-app .announcement-title { margin-block: .75rem .25rem; font-size: 1.375rem; line-height: 1.3; }
+.announcement-route { color: var(--ink); font-weight: 600; }
+.announcement-window { margin-top: .75rem; }
+.announcement-times { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: .75rem 1.25rem; margin: 1rem 0; padding: 1rem; border-radius: .75rem; background: var(--canvas); }
+.announcement-times > div { min-width: 0; }
+.announcement-times > div:only-child { grid-column: 1 / -1; }
+.announcement-times dt { color: var(--muted); font-size: .875rem; }
+.announcement-times dd { margin: .25rem 0 0; color: var(--ink); font-size: 1.375rem; line-height: 1.3; font-weight: 700; font-variant-numeric: tabular-nums; }
+.announcement-times > div:last-child:not(:first-child) dd { color: var(--blue); }
+.announcement-arrow { color: var(--muted); font-size: 1.25rem; }
+.announcement-reason { margin-top: .75rem; }
 .announcement-item small, .travel-footnote { color: var(--muted); font-size: .875rem; }
-.announcement-item summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; color: var(--blue); font-weight: 600; }
-.announcement-item blockquote { margin: .5rem 0; padding-inline-start: .75rem; border-inline-start: 2px solid var(--line); white-space: pre-wrap; }
+.announcement-item details { margin-top: .75rem; }
+.announcement-item summary { min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; cursor: pointer; color: var(--blue); font-weight: 600; list-style: none; }
+.announcement-item summary::-webkit-details-marker { display: none; }
+.announcement-item details[open] summary span { transform: rotate(180deg); }
+.announcement-details { border-top: 1px solid var(--line); padding-top: .75rem; max-width: 65ch; }
+.announcement-details > p + p { margin-top: .75rem; }
+.announcement-item blockquote { margin: .75rem 0; padding-inline-start: .75rem; border-inline-start: 2px solid var(--line); white-space: pre-wrap; color: var(--muted); }
+@media (max-width: 380px) {
+  .announcement-times { gap: .75rem; }
+  .announcement-times dd { font-size: 1.125rem; }
+}
 .trip-detail { display: block; color: var(--muted); font-size: .75rem; }
 .travel-timetable .times li { align-items: start; }
 .travel-timetable .times span { text-align: end; max-width: 48%; }
@@ -119,6 +141,14 @@
 .student-app .departure-time { font-size: 2.5rem; line-height: 1.1; margin-block: .5rem; }
 .departure-route { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem 1rem; margin-block: .75rem 0; }
 .departure-route span { font-size: .75rem; }
+.queue-stats { display: flex; flex-wrap: wrap; gap: 1rem 2rem; margin-block: 1rem; }
+.queue-stats > div { display: grid; gap: .25rem; min-width: 0; }
+.queue-stats span { color: var(--muted); font-size: .875rem; }
+.queue-stats strong { color: var(--ink); font-size: 2rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.student-app :is(.queue-card, .grab-prompt) { display: flex; flex-direction: column; }
+.student-app .home-card-description { margin-block: .5rem 0; }
+.home-card-actions { margin-top: auto; padding-top: 1rem; }
+.home-card-actions > :is(button, .student-link) { width: 100%; }
 
 .student-app .route-picker { background: var(--surface); }
 .student-app .route-picker :is(.route-trigger, .route-option):hover,

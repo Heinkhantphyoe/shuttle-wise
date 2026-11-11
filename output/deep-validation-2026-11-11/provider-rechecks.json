@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-11-10T17:17:37.699Z",
+  "scope": "Targeted rechecks of failed feature types; does not replace the complete-suite report.",
+  "results": [
+    {
+      "name": "Suspension",
+      "passed": false,
+      "error": "The operation was aborted due to timeout"
+    },
+    {
+      "name": "Capacity",
+      "passed": true
+    }
+  ]
+}

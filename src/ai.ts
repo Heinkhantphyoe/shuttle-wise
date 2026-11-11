@@ -3,6 +3,7 @@ import type { User } from 'firebase/auth'
 import { doc, getDocFromServer } from 'firebase/firestore'
 import { app, appCheck, db } from './firebase'
 import { parseGuidance, promptFor, tryProviders, validAIRequest, type AIRequest } from './ai-contract'
+import { localAI, localBriefing } from './travel-ai'
 
 const workerUrl = import.meta.env.VITE_AI_WORKER_URL
 const model = import.meta.env.VITE_GEMINI_MODEL
@@ -34,5 +35,5 @@ export async function guidance(request: AIRequest, user: User) {
   if (!validAIRequest(request)) return
   if (!db || (await user.getIdTokenResult()).signInProvider !== 'google.com'
     || !(await getDocFromServer(doc(db, 'admins', user.uid))).exists()) return
-  return tryProviders(request, gemini, input => openRouter(input, user))
+  return tryProviders(request, input => localAI ? localBriefing(input, user) : gemini(input), input => openRouter(input, user))
 }

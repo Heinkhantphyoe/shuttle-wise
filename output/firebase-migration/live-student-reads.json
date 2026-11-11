@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-11-10T17:01:27.261Z",
+  "project": "shutterbus",
+  "scope": "Real anonymous sign-in and read-only Firestore queries; no queue/GPS bypass or document writes.",
+  "results": [
+    {
+      "check": "transportNotices",
+      "status": 200,
+      "documents": 0
+    },
+    {
+      "check": "activity",
+      "status": 200,
+      "documents": 0
+    },
+    {
+      "check": "rideListings",
+      "status": 200,
+      "documents": 0
+    },
+    {
+      "check": "own missing membership",
+      "status": 404
+    },
+    {
+      "check": "private audit denied",
+      "status": 403
+    }
+  ]
+}

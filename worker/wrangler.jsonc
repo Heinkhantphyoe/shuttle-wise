@@ -3,10 +3,10 @@
   "main": "index.ts",
   "compatibility_date": "2025-09-01",
   "vars": {
-    "APP_ORIGIN": "https://shuttlewise-e77bf.web.app",
-    "FIREBASE_PROJECT_ID": "shuttlewise-e77bf",
-    "FIREBASE_PROJECT_NUMBER": "61369272200",
-    "FIREBASE_APP_ID": "1:61369272200:web:2b8c66ed166a780d4e1c3d",
+    "APP_ORIGIN": "https://shutterbus.web.app",
+    "FIREBASE_PROJECT_ID": "shutterbus",
+    "FIREBASE_PROJECT_NUMBER": "365071100344",
+    "FIREBASE_APP_ID": "1:365071100344:web:91a5dd492698a4deed074d",
     "GEMINI_MODEL": "gemini-3.5-flash-lite"
   },
   "ratelimits": [

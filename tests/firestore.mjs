@@ -4,7 +4,8 @@ import assert from 'node:assert/strict'
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing'
 import { collection, doc, FieldPath, getDoc, getDocs, query, serverTimestamp, setDoc, where, writeBatch } from 'firebase/firestore'
 import { updateActivity } from '../src/live.ts'
-import { publishNotice, saveSettings, withdrawNotice } from '../src/notices.ts'
+import { noticeRecord, publishNotice, saveSettings, withdrawNotice } from '../src/notices.ts'
+import { compareStudentJourney } from '../src/journey.ts'
 import { serviceDate, timeOn } from '../src/schedule.ts'
 
 let env
@@ -41,6 +42,90 @@ function student(uid) {
 }
 
 const google = { firebase: { sign_in_provider: 'google.com' } }
+
+test('published admin delays reach only checked-in students on the affected route', async () => {
+  await env.withSecurityRulesDisabled(context => setDoc(doc(context.firestore(), 'admins', 'admin'), {}))
+  const admin = env.authenticatedContext('admin', google).firestore()
+  const reader = student('notice-student')
+  const date = '2026-11-09'
+  const now = timeOn(date, '14:00')
+  const published = async () => (await getDocs(query(collection(reader, 'transportNotices'),
+    where('status', '==', 'published'), where('demo', '==', true)))).docs.map(item => noticeRecord(item.id, item.data()))
+  for (const route of ['apu', 'lrt']) {
+    const departure = route === 'apu' ? '14:30' : '14:25'
+    const draft = { title: 'Traffic delay', summary: 'This departure is 40 minutes late.', reason: 'Traffic',
+      sourceLabel: 'Emulator test', sourceExcerpt: '', sourceUrl: '', serviceDate: date,
+      visibleFrom: timeOn(date, '00:00'), expiresAt: timeOn(date, '23:59'), demo: true,
+      changes: [{ route, type: 'delay', departures: [departure], start: null, end: null, delayMinutes: 40,
+        revisedTime: null, capacity: null, pickup: '' }] }
+    await publishNotice(admin, 'admin', draft)
+    const notices = await published()
+    const input = { route, uid: 'notice-student', now, notices, demo: true }
+    assert.equal(compareStudentJourney(input).schedule.visible.length, 0)
+    await updateActivity(reader, 'notice-student', { type: 'check-in', route })
+    const activity = (await getDoc(doc(reader, 'activity', 'notice-student'))).data()
+    const result = compareStudentJourney(input, activity.route)
+    assert.equal(result.schedule.trips.find(trip => trip.original === timeOn(date, departure)).time,
+      timeOn(date, departure) + 40 * 60_000)
+    assert.equal(compareStudentJourney({ ...input, route: route === 'apu' ? 'lrt' : 'apu' }, activity.route).schedule.visible.length, 0)
+    assert.deepEqual((await getDoc(doc(reader, 'activity', 'notice-student'))).data(), activity)
+    await withdrawNotice(admin, 'admin', notices[0])
+    assert.equal(compareStudentJourney({ ...input, notices: await published() }, activity.route).schedule.visible.length, 0)
+    await updateActivity(reader, 'notice-student', { type: 'leave-queue' })
+    assert.equal(compareStudentJourney(input).schedule.visible.length, 0)
+  }
+})
+
+test('check-in does not require permission to read Grab memberships', async () => {
+  const rules = readFileSync('firestore.rules', 'utf8')
+  const start = rules.indexOf('    match /rideMemberships/{uid}')
+  const end = rules.indexOf('    match /history/{id}', start)
+  assert.ok(start >= 0 && end > start)
+  const isolated = await initializeTestEnvironment({ projectId: 'demo-checkin-independent',
+    firestore: { rules: rules.slice(0, start) + rules.slice(end) } })
+  try {
+    await isolated.clearFirestore()
+    const db = isolated.authenticatedContext('student', { firebase: { sign_in_provider: 'anonymous' } }).firestore()
+    await assertFails(getDoc(doc(db, 'rideMemberships', 'student')))
+    await assertSucceeds(updateActivity(db, 'student', { type: 'check-in', route: 'lrt' }))
+    const activity = (await getDoc(doc(db, 'activity', 'student'))).data()
+    assert.equal(activity.kind, 'queue')
+    assert.equal(activity.route, 'lrt')
+    await isolated.withSecurityRulesDisabled(async context => {
+      assert.equal((await getDoc(doc(context.firestore(), 'history', activity.eventId))).exists(), true)
+    })
+  } finally {
+    await isolated.clearFirestore()
+    await isolated.cleanup()
+  }
+})
+
+test('a saved delay expires for both student clients without deleting the notice or changing their check-ins', async () => {
+  await env.withSecurityRulesDisabled(context => setDoc(doc(context.firestore(), 'admins', 'expiry-admin'), {}))
+  const admin = env.authenticatedContext('expiry-admin', google).firestore()
+  const clients = ['expiry-first', 'expiry-second'].map(uid => ({ uid, db: student(uid) }))
+  const date = '2026-11-11'
+  const draft = { title: 'Expiry test', summary: 'The 5:10 pm departure is 40 minutes late.', reason: 'Test traffic',
+    sourceLabel: 'Emulator test', sourceExcerpt: '', sourceUrl: '', serviceDate: date,
+    visibleFrom: timeOn(date, '00:00'), expiresAt: timeOn(date, '23:59'), demo: true,
+    changes: [{ route: 'lrt', type: 'delay', departures: ['17:10'], start: null, end: null, delayMinutes: 40,
+      revisedTime: null, capacity: null, pickup: '' }] }
+  const id = await publishNotice(admin, 'expiry-admin', draft)
+  for (const { uid, db } of clients) {
+    await checkIn(db, uid, 'lrt')
+    const activityRef = doc(db, 'activity', uid)
+    const before = (await getDoc(activityRef)).data()
+    const saved = noticeRecord(id, (await getDoc(doc(db, 'transportNotices', id))).data())
+    const compare = now => compareStudentJourney({ route: 'lrt', uid, now, notices: [saved], demo: true }, 'lrt')
+    assert.equal(compare(timeOn(date, '17:50')).schedule.visible.length, 1)
+    const expired = compare(timeOn(date, '17:51'))
+    assert.equal(expired.schedule.visible.length, 0)
+    const trip = expired.schedule.trips.find(item => item.original === timeOn(date, '17:10'))
+    assert.equal(trip.time, trip.original)
+    assert.deepEqual((await getDoc(activityRef)).data(), before)
+    assert.equal((await getDoc(doc(db, 'transportNotices', id))).data().status, 'published')
+  }
+})
 
 test('only allowlisted Google admins publish notices/settings; students see published records without private audit data', async () => {
   await env.withSecurityRulesDisabled(context => setDoc(doc(context.firestore(), 'admins', 'admin'), {}))
@@ -131,6 +216,7 @@ for (const route of ['apu', 'lrt']) test(`${route}: host, join, fare and cancel 
   await assert.rejects(updateActivity(host, hostUid, { type: 'host', route, fare: 1800, name: 'Host' }), /Check in/)
   await checkIn(host, hostUid, route)
   await checkIn(member, memberUid, route)
+  await assert.rejects(updateActivity(host, hostUid, { type: 'host', route: route === 'apu' ? 'lrt' : 'apu', fare: 1800, name: 'Host' }), /Check in/)
   const beforeHost = (await getDoc(doc(host, 'activity', hostUid))).data()
   const beforeMember = (await getDoc(doc(member, 'activity', memberUid))).data()
   await assert.rejects(updateActivity(host, hostUid, { type: 'host', route, fare: 0, name: 'Host' }))
@@ -170,6 +256,39 @@ test('joining from the opposite pickup fails without changing either queue or ro
   assert.equal((await getDoc(doc(member, 'rideMemberships', 'wrong-route'))).exists(), false)
   assert.equal((await getDoc(doc(host, 'rideListings', rideId))).data().count, 1)
   assert.deepEqual((await getDoc(doc(member, 'activity', 'wrong-route'))).data(), before)
+})
+
+for (const route of ['apu', 'lrt']) test(`${route}: leaving, rejoining and replacing a closed membership preserve queue and capacity`, async () => {
+  const hostUid = `${route}-deep-host`, memberUid = `${route}-deep-member`
+  const host = student(hostUid), member = student(memberUid)
+  await checkIn(host, hostUid, route)
+  await checkIn(member, memberUid, route)
+  const before = (await getDoc(doc(member, 'activity', memberUid))).data()
+  await updateActivity(host, hostUid, { type: 'host', route, fare: 1, name: 'Host' })
+  const first = (await getDoc(doc(host, 'rideMemberships', hostUid))).data().rideId
+  const join = name => updateActivity(member, memberUid, { type: 'join', route, rideId: first, name })
+  for (const name of ['', 'x'.repeat(41)]) {
+    await assert.rejects(join(name))
+    assert.equal((await getDoc(doc(member, 'rideMemberships', memberUid))).exists(), false)
+    assert.equal((await getDoc(doc(host, 'rideListings', first))).data().count, 1)
+  }
+  await join('Member')
+  await assert.rejects(join('Member'), /current ride/)
+  await assert.rejects(updateActivity(host, hostUid, { type: 'leave-ride' }), /Close or cancel/)
+  await updateActivity(member, memberUid, { type: 'leave-ride' })
+  assert.equal((await getDoc(doc(host, 'rideListings', first))).data().count, 1)
+  await assertFails(getDoc(doc(member, 'rides', first)))
+  await join('Member again')
+  assert.equal((await getDoc(doc(host, 'rideListings', first))).data().count, 2)
+  await updateActivity(host, hostUid, { type: 'close', status: 'departed' })
+  assert.equal((await getDocs(query(collection(member, 'rideListings'), where('status', '==', 'open')))).size, 0)
+  await updateActivity(host, hostUid, { type: 'host', route, fare: 1000000, name: 'Host' })
+  const second = (await getDoc(doc(host, 'rideMemberships', hostUid))).data().rideId
+  assert.notEqual(first, second)
+  await updateActivity(member, memberUid, { type: 'join', route, rideId: second, name: 'Member' })
+  assert.equal((await getDoc(doc(member, 'rideMemberships', memberUid))).data().rideId, second)
+  assert.equal((await getDoc(doc(host, 'rideListings', second))).data().count, 2)
+  assert.deepEqual((await getDoc(doc(member, 'activity', memberUid))).data(), before)
 })
 
 test('check-in, queue and history access, and concurrent ride joins', async () => {

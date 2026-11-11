@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { webcrypto } from 'node:crypto'
 import worker from '../worker/index.ts'
+import { canonicalComparison } from '../worker/travel.ts'
 import { compareJourney } from '../src/journey.ts'
 import { serviceDate, timeOn } from '../src/schedule.ts'
 
@@ -26,6 +27,7 @@ test('travel endpoints enforce App Check and admin extraction, verify canonical 
   const date = serviceDate(Date.now())
   let providerCalls = 0, invalid = false, invalidCaution = false, failProvider = false, denyRooms = false
   const requests = []
+  let checkedInRoute
   const restValue = value => value === null ? { nullValue: null } : typeof value === 'string' ? { stringValue: value }
     : typeof value === 'number' ? { integerValue: String(value) } : typeof value === 'boolean' ? { booleanValue: value }
     : Array.isArray(value) ? { arrayValue: { values: value.map(restValue) } } : { mapValue: { fields: restFields(value) } }
@@ -43,6 +45,7 @@ test('travel endpoints enforce App Check and admin extraction, verify canonical 
         const docs = collection === 'rideListings' ? [{ id: 'room', route: 'apu', fare: 1800, count: 2, status: 'open' }] : []
         return Response.json(docs.map(({ id, ...data }) => ({ document: { name: `projects/${project}/databases/(default)/documents/${collection}/${id}`, fields: restFields(data) } })))
       }
+      if (url.endsWith('/activity/student') && checkedInRoute) return Response.json({ fields: restFields({ kind: 'queue', route: checkedInRoute }) })
       return new Response(null, { status: 404 })
     }
     assert.ok(url.startsWith('https://generativelanguage.googleapis.com/v1beta/models/'))
@@ -112,5 +115,12 @@ test('travel endpoints enforce App Check and admin extraction, verify canonical 
   assert.equal((await send('/ai/notice-extract', admin, { text: 'late' })).status, 502)
   failProvider = false; denyRooms = true
   assert.equal((await send('/ai/journey-advice', student, { route: 'apu', fingerprint: comparison.fingerprint })).status, 502)
+  assert.ok(!requests.includes('transportNotices'))
+  failProvider = false; denyRooms = false
+  checkedInRoute = 'lrt'
+  await canonicalComparison(env, student, 'student', 'apu', Date.now())
+  assert.ok(!requests.includes('transportNotices'))
+  checkedInRoute = 'apu'
+  await canonicalComparison(env, student, 'student', 'apu', Date.now())
   assert.ok(requests.includes('transportNotices') && requests.includes('activity') && requests.includes('rideListings'))
 })

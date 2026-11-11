@@ -1,0 +1,49 @@
+{
+  "checkedAt": "2026-11-10T17:03:17.233Z",
+  "timezone": "Asia/Kuala_Lumpur",
+  "sourceProject": "shuttlewise-e77bf",
+  "destinationProject": "shutterbus",
+  "sourceModified": false,
+  "sourceDataCopied": false,
+  "setupMode": "Fresh setup requested after source project access was denied",
+  "database": {
+    "edition": "Standard",
+    "location": "asia-southeast1",
+    "billing": "Spark; no billing upgrade"
+  },
+  "configuration": [
+    "Google and anonymous sign-in enabled",
+    "localhost authorised",
+    "Existing project Firestore rules published",
+    "Only the approved Google account added to app admin allowlist",
+    "Browser and Worker configuration changed to shutterbus",
+    "Private rollback configuration backup retained in ignored .firebase directory; not a database backup"
+  ],
+  "liveVerified": [
+    "Google admin sign-in and dashboard access",
+    "Gemini extraction using the new Firebase admin token",
+    "Labelled Setup Test Notice published and then withdrawn",
+    "Unchecked-in student hides the notice",
+    "No announcement or Grab permission error",
+    "Anonymous published-notice, queue and ride-list reads",
+    "Own missing membership readable; private audit denied"
+  ],
+  "tests": {
+    "app": 28,
+    "firestoreEmulator": 10,
+    "build": "passed"
+  },
+  "limitations": [
+    "Device GPS reported 169-metre accuracy; kept 50-metre requirement",
+    "Live checked-in student notice, host and join tests pending; emulator tests passed",
+    "Old Firestore records and Authentication users not imported",
+    "No public Hosting or Cloudflare deployment",
+    "Separate legacy Firebase AI Logic briefing not newly configured"
+  ],
+  "secrets": {
+    "geminiKeyChanged": false,
+    "inPublicBuild": false,
+    "privateFileMode": "0600"
+  },
+  "testCleanup": "Setup Test Notice withdrawn; temporary API-test Auth account removed; no test queue or ride documents created"
+}

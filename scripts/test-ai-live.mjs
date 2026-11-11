@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { loadEnvFile } from 'node:process'
 import { readFile, mkdir, writeFile } from 'node:fs/promises'
-import { readTransportUpdate, explainJourney } from '../worker/travel.ts'
+import { readAdminBriefing, readTransportUpdate, explainJourney } from '../worker/travel.ts'
 import { compareJourney, effectiveSchedule } from '../src/journey.ts'
 import { routes, timeOn } from '../src/schedule.ts'
 import { noticeErrors } from '../src/travel-contract.ts'
@@ -111,6 +111,14 @@ await check('Student explanation: real Gemini, validated evidence, calculated fa
   ] })
   assert.equal(comparison.cheapest.id, 'test-cheapest')
   return explainJourney(comparison, env)
+})
+
+await check('Admin history briefing: real Gemini with numeric summary only', async () => {
+  const metrics = { current: 0, previous: 0, peakHour: -1, peakCount: 0 }
+  const guidance = await readAdminBriefing({ kind: 'briefing', metrics: { apu: metrics, lrt: metrics } }, env)
+  assert.ok(guidance.length > 0 && guidance.length <= 400)
+  assert.doesNotMatch(guidance, /[\p{N}<>\r\n]/u)
+  return { guidance }
 })
 
 assert.equal(JSON.stringify(routes), original, 'Live checks must preserve the standard timetable.')
