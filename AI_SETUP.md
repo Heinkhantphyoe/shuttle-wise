@@ -8,7 +8,7 @@ This is a fresh setup, as requested after the old project denied access. **No ol
 
 ## Easiest setup on this computer
 
-Run `npm run dev` from the `shuttle-wise` folder, then open the Local URL printed in the terminal and go to `/admin`. Sign in with an allowlisted Google admin account, choose a direction, enter the update and click **Read with AI**. Restart an already-running dev server once after adding this configuration.
+Run `npm run dev` from the `shuttle-wise` folder, then open the Local URL printed in the terminal and go to `/admin`. Sign in with an allowlisted Google admin account, choose a direction, enter the update and click **Create notice preview**. Restart an already-running dev server once after adding this configuration.
 
 The development server now runs the AI endpoint itself. It reads the existing private key from ignored `worker/.dev.vars`, so no Worker URL or reCAPTCHA site key is needed for this local flow. It reuses the same Gemini extraction, image limits and response validation as the Worker. The key is never included in the browser bundle; the server also blocks requests for `.env`, `.dev.vars` and private `.firebase` backups.
 
@@ -16,7 +16,7 @@ Verified in Dia on 11 November 2026: admin sign-in, real Gemini notice reading, 
 
 This endpoint works only on loopback (`localhost` / `127.0.0.1` / `::1`), requires a matching browser Origin, verifies Firebase sign-in and Google admin allowlisting, and limits each admin to six requests per minute. It supports admin notice reading, numeric-only admin briefing and setup status. Local Firebase emulator mode remains separate and does not use this endpoint. The production build does not include the endpoint or enable local mode; the hosted Worker still requires App Check.
 
-**Read with AI** only prepares a draft. **Publish announcement** still uses the existing Firestore permissions and does not write the standard timetable. If publication or announcement loading says “Missing or insufficient permissions”, the Firebase owner must deploy the matching rules and confirm admin access. The Gemini key cannot grant database permissions. Students receive published changes only while checked in on the affected direction.
+**Create notice preview** only prepares a draft. **Publish announcement** still uses the existing Firestore permissions and does not write the standard timetable. If publication or announcement loading says “Missing or insufficient permissions”, the Firebase owner must deploy the matching rules and confirm admin access. The Gemini key cannot grant database permissions. Students receive published changes only while checked in on the affected direction.
 
 ## Hosted setup
 
@@ -111,16 +111,16 @@ The old briefing uses POST `/`. New endpoints use POST `/ai/notice-extract`, `/a
 
 ## 4. Publish a transport update
 
-Use the single **Admin update** form. There is no separate review form and no title or summary to type.
+Use the single **New announcement** form. There is no separate review form and no title or summary to type.
 
 1. Choose **Affected direction**: APU → LRT, LRT → APU, or Both directions.
 2. Write one message with the date (or say today), affected departure or time period, delay/change, and reason. You can also attach a JPG/PNG notice. For example: “Today, the 5:10 pm departure will be 40 minutes late because of traffic.” For both directions, explain the affected services in each direction.
-3. Click **Read with AI**. AI reads the details and generates the student notice. A short, read-only result appears in the same card, including the affected direction and timing. You do not fill in a student title, summary, or another set of fields.
-4. If details are missing or incorrect, edit the original message and read it again. Changing the message, direction, or image clears the old result so it cannot be published accidentally. When the result is correct, click **Publish announcement** in that same card.
+3. Click **Create notice preview**. AI reads the details and generates the student notice. A short, read-only result appears in the same card, including the affected direction and timing. You do not fill in a student title, summary, or another set of fields.
+4. If details are missing or incorrect, edit the original message and click **Create notice preview** again. Changing the message, direction, or image clears the old result so it cannot be published accidentally. When the result is correct, click **Publish announcement** in that same card.
 
 A selected direction controls which students receive the change. AI cannot silently switch it to the opposite route. If the message contradicts the selection or does not explain every selected direction, publication is blocked and the admin corrects the original message.
 
-Conflicting notices must be explicitly replaced or corrected. **Edit update** loads the existing facts as a plain message in the same form; read it again before publishing the correction. **Withdraw** removes the temporary effect.
+Conflicting notices must be explicitly replaced or corrected. **Edit update** loads the existing facts as a plain message in the same form; create a new preview before publishing the correction. **Withdraw** removes the temporary effect.
 
 Students see temporary notices and revised times only after checking in on the selected affected direction. Before check-in, after leaving the queue, or when browsing the other direction, they see the standard timetable. Home and Timetable use the same rule. Original and reported revised times appear together. The countdown updates with Malaysia time. A later scheduled bus may operate before a delayed one. An incoming bus delay never automatically changes its opposite-direction return service. If checked-in students cannot load notices, the app labels the displayed times as the standard timetable.
 

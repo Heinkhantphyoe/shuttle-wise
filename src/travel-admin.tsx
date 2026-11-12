@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import type { User } from 'firebase/auth'
 import type { Firestore } from 'firebase/firestore'
 import { useEmulators } from './firebase'
+import { DirectionSelect } from './direction-select'
 import { conflictingNoticeIds } from './journey'
 import { publishNotice, watchNotices, withdrawNotice } from './notices'
-import { formatTime, routeIds, routeLabel, timeOn } from './schedule'
+import { formatTime, routeLabel, timeOn } from './schedule'
 import { extractNotice, prepareNoticeImage, type NoticeImage } from './travel-ai'
 import { directionRoutes, noticeErrors, noticeExpiresAt, type AffectedDirection, type Extraction, type NoticeChange, type TransportNotice } from './travel-contract'
 
@@ -78,26 +79,34 @@ export function TravelAdmin({ db, user }: { db: Firestore; user: User }) {
 
   return <section className="travel-admin" aria-labelledby="travel-admin-heading">
     <h2 id="travel-admin-heading">Transport announcements</h2>
-    <p>Choose who is affected and write the update. AI will read the details and prepare the notice for those students.</p>
+    <p>Turn a message or notice image into a student announcement with AI. Check the preview before you publish.</p>
+    <section className="announcement-guide" aria-labelledby="announcement-guide-heading">
+      <h3 id="announcement-guide-heading">How to post an update</h3>
+      <ol>
+        <li><strong>Add the details</strong><span>Choose a direction. Type the update or upload a notice image.</span></li>
+        <li><strong>Create a preview</strong><span>AI prepares a draft. Check the date, times and changes.</span></li>
+        <li><strong>Publish the notice</strong><span>Click Publish announcement to show it to affected students.</span></li>
+      </ol>
+    </section>
     {useEmulators && <p className="notice">Local demo only. These notices stay in the emulator and are labelled as demo data.</p>}
     <div className="announcement-workspace">
     <div className="announcement-compose">
     <form ref={formRef} className="card announcement-form" onSubmit={event => {
       event.preventDefault()
       void run(async () => {
-        if (!draft || !direction || issues.length) throw new Error('Add the missing details to the message and read it with AI again.')
+        if (!draft || !direction || issues.length) throw new Error('Add the missing details, then click Create notice preview again.')
         const selected = directionRoutes(direction)
-        if (draft.changes.length !== selected.length || draft.changes.some(change => !selected.includes(change.route))) throw new Error('Read the update again for the selected direction.')
-        if (noticeExpiresAt(draft) <= Date.now()) throw new Error('This update has expired. Correct the date in your message and read it again.')
+        if (draft.changes.length !== selected.length || draft.changes.some(change => !selected.includes(change.route))) throw new Error('Create a new notice preview for the selected direction.')
+        if (noticeExpiresAt(draft) <= Date.now()) throw new Error('This update has expired. Correct the date, then create a new notice preview.')
         await publishNotice(db, user.uid, draft, editing, supersede)
         reset(); setToast({ kind: 'success', message: 'Published. Students on the affected directions will receive the update.' })
       })
     }}>
-      <h3>{editing ? 'Edit announcement' : 'Admin update'}</h3>
+      <h3>{editing ? 'Edit announcement' : 'New announcement'}</h3>
       <fieldset disabled={busy}>
-        <label>Affected direction<select required value={direction} onChange={event => {
-          setDirection(event.target.value as AffectedDirection | ''); clearAnalysis()
-        }}><option value="">Choose a direction</option>{routeIds.map(route => <option key={route} value={route}>{routeLabel(route)}</option>)}<option value="both">Both directions</option></select></label>
+        <DirectionSelect value={direction} disabled={busy} onChange={value => {
+          setDirection(value); clearAnalysis()
+        }} />
         <label>Update message<textarea aria-describedby="update-message-help" value={sourceText} maxLength={8000} rows={6} onChange={event => {
           setSourceText(event.target.value); clearAnalysis()
         }} placeholder="Today, the 5:10 pm departure will be 40 minutes late because of heavy traffic." /></label>
@@ -121,11 +130,14 @@ export function TravelAdmin({ db, user }: { db: Firestore; user: User }) {
           setAnalysis(undefined); setSupersede([])
           const result = await extractNotice(sourceText, image, direction, user)
           setAnalysis({ ...result, draft: { ...result.draft, demo: useEmulators } })
-        })}>{busy ? 'Working…' : 'Read with AI'}</button>
+        })}>{busy ? 'Working…' : 'Create notice preview'}</button>
           <button type="button" className="secondary" onClick={reset}>{editing ? 'Cancel editing' : 'Clear'}</button></div>
+        <p className="form-help">{!direction ? 'Choose a direction and add a message or image to create a preview.'
+          : !sourceText.trim() && !image ? 'Add a message or notice image to create a preview.'
+          : 'AI prepares a draft. Students see it only after you publish.'}</p>
         {analysis && <div className="announcement-result" aria-live="polite">
-          {issues.length ? <div className="notice"><p>Add these details to your message, then read it again:</p><ul>{issues.map(issue => <li key={issue}>{issue}</li>)}</ul></div>
-            : <><h3>Update preview</h3>
+          {issues.length ? <div className="notice"><p>Add these details, then click Create notice preview again:</p><ul>{issues.map(issue => <li key={issue}>{issue}</li>)}</ul></div>
+            : <><h3>Notice preview</h3>
               <p className="travel-footnote">{draft!.serviceDate} · Malaysia time</p>
               {draft!.changes.map(change => <div className="notice-change-preview" key={change.route}>
                 <h4>{routeLabel(change.route)}</h4>
@@ -142,7 +154,7 @@ export function TravelAdmin({ db, user }: { db: Firestore; user: User }) {
                 <div><dt>Reason</dt><dd>{draft!.reason}</dd></div>
                 <div><dt>Expires</dt><dd>{localTime(draft!.expiresAt)}</dd></div>
               </dl>
-              <p className="travel-footnote">Need a correction? Edit your message and read it again.</p>
+              <p className="travel-footnote">Need a correction? Edit your message, then click Create notice preview again.</p>
               {conflicts.length > 0 && <div className="notice"><p>This replaces an existing update only if you select it below.</p>{conflicts.map(id => <label className="check-label" key={id}>
                 <input type="checkbox" checked={supersede.includes(id)} onChange={event => setSupersede(value => event.target.checked ? [...value, id] : value.filter(item => item !== id))} />Replace “{notices?.find(item => item.id === id)?.title}”
               </label>)}</div>}
