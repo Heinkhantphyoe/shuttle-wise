@@ -35,6 +35,8 @@ p { color: var(--muted); margin-block: .35rem; }
 .hero small, .hero p { color: #d3e0f6; }
 .hero h2 { font-size: 1.5rem; margin-top: .25rem; }
 .notice { padding: .75rem; border-radius: .65rem; background: #e6efff; color: #173c7a; }
+.testing-notice { margin: 1rem 1.25rem 0; }
+.testing-notice p { margin-bottom: 0; color: inherit; }
 label { display: grid; gap: .3rem; font-weight: 600; margin-block: .65rem; }
 button, input, select { min-height: 44px; font: inherit; border-radius: .65rem; padding: .45rem .75rem; }
 input, select { width: 100%; border: 1px solid #a9b8cb; background: white; color: #10213b; }

@@ -65,3 +65,22 @@ Close open rides from the previous version before switching over. The updated cl
 - Bukit Jalil LRT station is approximately `3.0581, 101.6919`. [Station reference](https://www.klia2.info/rail/rapidkl-lrt/ampang-line/bukit-jalil/) · [Google Maps pin](https://www.google.com/maps/search/?api=1&query=3.0581%2C101.6919)
 
 Use a dropped pin at each actual boarding spot for the 50-metre check-in radius. The public references identify the campus and station landmarks.
+
+### Temporary Savanna testing
+
+The saved APU pickup remains `3.055070, 101.700573`; the saved Bukit Jalil LRT pickup remains `3.058372, 101.691650`. Do not replace these values with Savanna.
+
+`VITE_PICKUP_PROFILE=savanna` makes both route check-ins use the separately configured Savanna Bukit Jalil pin (`VITE_SAVANNA_LATITUDE=3.0562257`, `VITE_SAVANNA_LONGITUDE=101.687699`). [Google Maps place](https://www.google.com/maps/search/?api=1&query=Savanna%20Bukit%20Jalil&query_place_id=ChIJ9-pxWZRKzDER6d6_eSGxdAk). The app shows a temporary-testing notice. The existing 50-metre pickup radius and GPS accuracy check still apply.
+
+To restore the real pickup points, set `VITE_PICKUP_PROFILE=original` in the local environment and Vercel Production environment, then restart the local server and redeploy production. The four original coordinate variables stay unchanged. `.env.example` defaults to the original pickup points.
+
+The requested temporary data adds 30 sample check-ins (15 per direction) and 6 sample open rides (3 per direction), using IDs beginning `sample-savanna-20261112-`. Normal local development and production use the same `shutterbus` database, so the samples are shared. Sample ride cards are labelled. These are display/test records, not real drivers or bookings.
+
+The private manifest and management script are under ignored `.firebase/savanna-demo-2026-11-12/`. To inspect or remove only this sample set on this computer:
+
+```sh
+node .firebase/savanna-demo-2026-11-12/manage-samples.mjs inspect
+node .firebase/savanna-demo-2026-11-12/manage-samples.mjs remove
+```
+
+Removal checks the exact recorded document IDs and refuses to remove a changed ride, including a ride that someone has joined. It does not reset the database. Changing the pickup profile does not itself delete sample data.

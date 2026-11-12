@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom'
 import { onAuthStateChanged, signInAnonymously, type User } from 'firebase/auth'
 import { useEffect, useRef, useState } from 'react'
 import { adminPage, auth, db } from './firebase'
+import { temporaryPickup } from './config'
 import { Student } from './student'
 import { Admin } from './admin'
 import './style.css'
@@ -105,6 +106,10 @@ function App() {
         <ViewSwitcher />
       </div>}
     </header>
+    {temporaryPickup && <aside className="notice testing-notice">
+      <strong>Temporary testing · {temporaryPickup}</strong>
+      <p>Both routes use this check-in location. Sample students and rides may appear.</p>
+    </aside>}
     {authError && <p className="notice" role="alert">{authError}</p>}
     {adminPage
       ? auth && db ? <Admin auth={auth} db={db} user={user} /> : <section className="content"><h1>Admin dashboard</h1><p>Firebase is unconfigured.</p></section>

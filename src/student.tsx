@@ -480,6 +480,7 @@ function RideList({ db, user, canJoin, join }: Session & {
       : db && user ? 'Loading Grab shares…' : 'Live Grab listings are unavailable.')}</p></div>}
     {rides?.map(ride => <section key={ride.id} className="card">
       <h2>{routes[ride.route].origin} → {routes[ride.route].destination}</h2>
+      {ride.id.startsWith('sample-savanna-20261112-') && <p>Sample ride · for testing</p>}
       <RideFare fare={ride.fare} count={ride.count} />
       {ride.count >= 4 ? <p>This ride is full.</p> : <form onSubmit={event => submit(event, ride)}>
         <p>After you join, your share is about {money(ride.fare / (ride.count + 1))}.</p>
