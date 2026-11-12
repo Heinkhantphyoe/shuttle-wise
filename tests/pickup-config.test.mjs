@@ -6,7 +6,7 @@ import { withinPickup } from '../src/pickup.ts'
 const env = {
   VITE_APU_LATITUDE: '3.055070', VITE_APU_LONGITUDE: '101.700573',
   VITE_LRT_LATITUDE: '3.058372', VITE_LRT_LONGITUDE: '101.691650',
-  VITE_SAVANNA_LATITUDE: '3.0562257', VITE_SAVANNA_LONGITUDE: '101.687699',
+  VITE_SAVANNA_LATITUDE: '3.056444', VITE_SAVANNA_LONGITUDE: '101.687690',
 }
 
 test('Savanna testing uses both routes without overwriting the saved pickup points', () => {
@@ -16,7 +16,7 @@ test('Savanna testing uses both routes without overwriting the saved pickup poin
   assert.deepEqual(temporary.savedPickups.lrt, { latitude: 3.058372, longitude: 101.691650 })
   assert.equal(temporary.temporaryPickup, 'Savanna Bukit Jalil')
   for (const route of ['apu', 'lrt']) {
-    assert.deepEqual(temporary.pickups[route], { latitude: 3.0562257, longitude: 101.687699 })
+    assert.deepEqual(temporary.pickups[route], { latitude: 3.056444, longitude: 101.687690 })
     assert.equal(withinPickup(temporary.pickups[route], { ...temporary.pickups[route], accuracy: 10 }), true)
     assert.equal(withinPickup(temporary.pickups[route], { ...original.pickups[route], accuracy: 10 }), false)
   }
@@ -25,7 +25,7 @@ test('Savanna testing uses both routes without overwriting the saved pickup poin
 
 test('switching back to original restores both pickup geofences', () => {
   const original = pickupConfiguration({ ...env, VITE_PICKUP_PROFILE: 'original' })
-  const savanna = { latitude: 3.0562257, longitude: 101.687699, accuracy: 10 }
+  const savanna = { latitude: 3.056444, longitude: 101.687690, accuracy: 10 }
   assert.equal(original.temporaryPickup, undefined)
   for (const route of ['apu', 'lrt']) {
     assert.equal(withinPickup(original.pickups[route], { ...original.savedPickups[route], accuracy: 10 }), true)

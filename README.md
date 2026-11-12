@@ -70,7 +70,7 @@ Use a dropped pin at each actual boarding spot for the 50-metre check-in radius.
 
 The saved APU pickup remains `3.055070, 101.700573`; the saved Bukit Jalil LRT pickup remains `3.058372, 101.691650`. Do not replace these values with Savanna.
 
-`VITE_PICKUP_PROFILE=savanna` makes both route check-ins use the separately configured Savanna Bukit Jalil pin (`VITE_SAVANNA_LATITUDE=3.0562257`, `VITE_SAVANNA_LONGITUDE=101.687699`). [Google Maps place](https://www.google.com/maps/search/?api=1&query=Savanna%20Bukit%20Jalil&query_place_id=ChIJ9-pxWZRKzDER6d6_eSGxdAk). The app shows a temporary-testing notice. The existing 50-metre pickup radius and GPS accuracy check still apply.
+`VITE_PICKUP_PROFILE=savanna` makes both route check-ins use the separately configured Savanna Bukit Jalil pin (`VITE_SAVANNA_LATITUDE=3.056444`, `VITE_SAVANNA_LONGITUDE=101.687690`). [Google Maps place](https://www.google.com/maps/search/?api=1&query=3.056444%2C101.687690). The app shows a temporary-testing notice. The existing 50-metre pickup radius and GPS accuracy check still apply.
 
 To restore the real pickup points, set `VITE_PICKUP_PROFILE=original` in the local environment and Vercel Production environment, then restart the local server and redeploy production. The four original coordinate variables stay unchanged. `.env.example` defaults to the original pickup points.
 
