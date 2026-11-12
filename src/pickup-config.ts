@@ -21,8 +21,15 @@ export function pickupConfiguration(env: Environment) {
     lrt: point(env, 'VITE_LRT'),
   }
   const profile = env.VITE_PICKUP_PROFILE?.trim() || 'original'
-  const savanna = profile === 'savanna' ? point(env, 'VITE_SAVANNA') : undefined
-  const pickups: Record<RouteId, Point | undefined> = profile === 'original'
-    ? savedPickups : { apu: savanna, lrt: savanna }
-  return { savedPickups, pickups, temporaryPickup: profile === 'savanna' ? 'Savanna Bukit Jalil' : undefined }
+  const profiles = {
+    apu: env.VITE_APU_PICKUP_PROFILE?.trim() || profile,
+    lrt: env.VITE_LRT_PICKUP_PROFILE?.trim() || profile,
+  }
+  const savanna = point(env, 'VITE_SAVANNA')
+  const selected = (route: RouteId) => profiles[route] === 'original' ? savedPickups[route]
+    : profiles[route] === 'savanna' ? savanna : undefined
+  const pickups = { apu: selected('apu'), lrt: selected('lrt') }
+  const temporaryRoutes = (['apu', 'lrt'] as const).filter(route => profiles[route] === 'savanna')
+  const temporaryPickupScope = temporaryRoutes.length === 2 ? 'Both routes' : temporaryRoutes[0] === 'apu' ? 'The APU route' : 'The LRT route'
+  return { savedPickups, pickups, temporaryPickup: temporaryRoutes.length ? 'Savanna Bukit Jalil' : undefined, temporaryPickupScope }
 }

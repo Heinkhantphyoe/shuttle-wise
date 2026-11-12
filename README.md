@@ -84,3 +84,5 @@ node .firebase/savanna-demo-2026-11-12/manage-samples.mjs remove
 ```
 
 Removal checks the exact recorded document IDs and refuses to remove a changed ride, including a ride that someone has joined. It does not reset the database. Changing the pickup profile does not itself delete sample data.
+
+LRT restored on 13 November 2026: `VITE_LRT_PICKUP_PROFILE=original` restores only the original Bukit Jalil LRT point (`3.058372, 101.691650`). APU still follows `VITE_PICKUP_PROFILE=savanna`. Per-route overrides take priority over the shared profile. Samples are retained.

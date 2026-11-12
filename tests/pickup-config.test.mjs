@@ -9,6 +9,15 @@ const env = {
   VITE_SAVANNA_LATITUDE: '3.056444', VITE_SAVANNA_LONGITUDE: '101.687690',
 }
 
+test('restoring only LRT keeps APU at Savanna and rejects Savanna for LRT check-in', () => {
+  const config = pickupConfiguration({ ...env, VITE_PICKUP_PROFILE: 'savanna', VITE_LRT_PICKUP_PROFILE: 'original' })
+  assert.deepEqual(config.pickups.lrt, { latitude: 3.058372, longitude: 101.691650 })
+  assert.deepEqual(config.pickups.apu, { latitude: 3.056444, longitude: 101.687690 })
+  assert.equal(withinPickup(config.pickups.lrt, { ...config.pickups.apu, accuracy: 10 }), false)
+  assert.equal(withinPickup(config.pickups.lrt, { ...config.savedPickups.lrt, accuracy: 10 }), true)
+  assert.equal(config.temporaryPickupScope, 'The APU route')
+})
+
 test('Savanna testing uses both routes without overwriting the saved pickup points', () => {
   const original = pickupConfiguration(env)
   const temporary = pickupConfiguration({ ...env, VITE_PICKUP_PROFILE: 'savanna' })

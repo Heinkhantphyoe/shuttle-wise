@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom'
 import { onAuthStateChanged, signInAnonymously, type User } from 'firebase/auth'
 import { useEffect, useRef, useState } from 'react'
 import { adminPage, auth, db } from './firebase'
-import { temporaryPickup } from './config'
+import { temporaryPickup, temporaryPickupScope } from './config'
 import { Student } from './student'
 import { Admin } from './admin'
 import './style.css'
@@ -108,7 +108,7 @@ function App() {
     </header>
     {temporaryPickup && <aside className="notice testing-notice">
       <strong>Temporary testing · {temporaryPickup}</strong>
-      <p>Both routes use this check-in location. Sample students and rides may appear.</p>
+      <p>{temporaryPickupScope} {temporaryPickupScope === 'Both routes' ? 'use' : 'uses'} this check-in location. Sample students and rides may appear.</p>
     </aside>}
     {authError && <p className="notice" role="alert">{authError}</p>}
     {adminPage
