@@ -95,3 +95,5 @@ At the user's request, the shared `shutterbus` database now intentionally retain
 The build and 42 tests pass. Dia shows the new notice, 15 waiting students on each route and six labelled sample rides. No production GPS override was used; an actual-device check-in at Savanna remains a physical test. The public pages return 200, private paths return 404, unsigned AI returns 401, and the 15-minute runtime scan found no errors. See `output/savanna-demo-2026-11-12/RESULTS.md` for configuration, verification and restoration details.
 
 Savanna pin correction, 12 November 2026: the user supplied the exact temporary pickup coordinates **3.056444, 101.687690** in a screenshot. These replace the earlier public place pin for both test routes. The saved APU/LRT coordinates and all sample records are preserved.
+
+The exact-pin rebuild is READY as `dpl_HvWJi8N6V2K6HaSCZQAr87xxgQom`, serving https://shuttle-wise.vercel.app from source commit `c575afe`. Production environment readback confirms the corrected Savanna values and unchanged original pickup values.

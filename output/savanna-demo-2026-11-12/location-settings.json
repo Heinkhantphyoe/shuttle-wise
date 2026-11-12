@@ -3,11 +3,11 @@
   "activePickups": {
     "apu": {
       "latitude": 3.056444,
-      "longitude": 101.687690
+      "longitude": 101.68769
     },
     "lrt": {
       "latitude": 3.056444,
-      "longitude": 101.687690
+      "longitude": 101.68769
     }
   },
   "savedOriginalPickups": {
@@ -20,5 +20,5 @@
       "longitude": 101.69165
     }
   },
-  "source": "https://www.google.com/maps/search/?api=1&query=Savanna%20Bukit%20Jalil&query_place_id=ChIJ9-pxWZRKzDER6d6_eSGxdAk"
+  "source": "Exact coordinates supplied by the user in a screenshot on 12 November 2026"
 }

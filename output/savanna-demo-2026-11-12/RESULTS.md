@@ -50,3 +50,7 @@ The ignored `.firebase/savanna-demo-2026-11-12/` directory contains the private 
 Source commit `8a93f5e` was pushed to main. Production deployment `dpl_3552jWkr476cvdHsBJ9R1HU58Gmp` is READY and serves `shuttle-wise.vercel.app`. Build time was about 55 seconds. The production update uses the existing project and settings; only the three new location variables were added.
 
 The existing unrelated modifications to AGENTS.md and tests/local-ai.test.mjs, plus other untracked workspace files, were left alone. Local screenshots and the private seed-management files are not uploaded to production or committed to the public repository.
+
+## Exact pin correction — 12 November 2026
+
+The user supplied a screenshot with **3.056444, 101.687690**. Both temporary pickup points now use these exact coordinates instead of the earlier public place pin. Original APU/LRT variables and all 84 sample documents were left unchanged. Local build and all 42 tests pass.
