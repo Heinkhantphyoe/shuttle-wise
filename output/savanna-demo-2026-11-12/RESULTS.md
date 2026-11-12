@@ -54,3 +54,7 @@ The existing unrelated modifications to AGENTS.md and tests/local-ai.test.mjs, p
 ## Exact pin correction — 12 November 2026
 
 The user supplied a screenshot with **3.056444, 101.687690**. Both temporary pickup points now use these exact coordinates instead of the earlier public place pin. Original APU/LRT variables and all 84 sample documents were left unchanged. Local build and all 42 tests pass.
+
+## LRT restoration — 13 November 2026
+
+At the user's request, only LRT was restored to **3.058372, 101.691650** using `VITE_LRT_PICKUP_PROFILE=original`. APU remains at the temporary Savanna pin **3.056444, 101.687690**. No sample data was added, removed or changed. Build and all 43 tests pass. The temporary-location banner now identifies only APU.

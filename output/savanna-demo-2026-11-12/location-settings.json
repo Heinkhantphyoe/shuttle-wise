@@ -6,8 +6,8 @@
       "longitude": 101.68769
     },
     "lrt": {
-      "latitude": 3.056444,
-      "longitude": 101.68769
+      "latitude": 3.058372,
+      "longitude": 101.69165
     }
   },
   "savedOriginalPickups": {
@@ -20,5 +20,9 @@
       "longitude": 101.69165
     }
   },
-  "source": "Exact coordinates supplied by the user in a screenshot on 12 November 2026"
+  "source": "Exact coordinates supplied by the user in a screenshot on 12 November 2026",
+  "activeProfiles": {
+    "apu": "savanna",
+    "lrt": "original"
+  }
 }

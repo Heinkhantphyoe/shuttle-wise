@@ -97,3 +97,7 @@ The build and 42 tests pass. Dia shows the new notice, 15 waiting students on ea
 Savanna pin correction, 12 November 2026: the user supplied the exact temporary pickup coordinates **3.056444, 101.687690** in a screenshot. These replace the earlier public place pin for both test routes. The saved APU/LRT coordinates and all sample records are preserved.
 
 The exact-pin rebuild is READY as `dpl_HvWJi8N6V2K6HaSCZQAr87xxgQom`, serving https://shuttle-wise.vercel.app from source commit `c575afe`. Production environment readback confirms the corrected Savanna values and unchanged original pickup values.
+
+### LRT restored — 13 November 2026
+
+Deployment `dpl_369qY1iag8jnC3xLvEEmi9TkUTzh` is READY, using source commit `ee6e330`. `VITE_LRT_PICKUP_PROFILE=original` restores the saved Bukit Jalil LRT point (`3.058372, 101.691650`) locally and in production. APU remains on the Savanna profile. The banner now names only APU. Build and 43 tests passed; running local settings and the deployed bundle were checked. Sample data was not changed.
