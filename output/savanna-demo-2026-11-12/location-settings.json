@@ -1,0 +1,24 @@
+{
+  "activeProfile": "savanna",
+  "activePickups": {
+    "apu": {
+      "latitude": 3.0562257,
+      "longitude": 101.687699
+    },
+    "lrt": {
+      "latitude": 3.0562257,
+      "longitude": 101.687699
+    }
+  },
+  "savedOriginalPickups": {
+    "apu": {
+      "latitude": 3.05507,
+      "longitude": 101.700573
+    },
+    "lrt": {
+      "latitude": 3.058372,
+      "longitude": 101.69165
+    }
+  },
+  "source": "https://www.google.com/maps/search/?api=1&query=Savanna%20Bukit%20Jalil&query_place_id=ChIJ9-pxWZRKzDER6d6_eSGxdAk"
+}

@@ -85,3 +85,11 @@ Timetable correction, 11 November 2026 at 10:53 pm Malaysia time: deployment `dp
 Deployment `dpl_FDKBvWFfyrDcj7GqLM5N79ghhBx2` is READY on https://shuttle-wise.vercel.app. It uses GitHub commit `216e3a7` on `main`. The admin form now uses **Create notice preview**, includes a short three-step guide, and provides a styled direction dropdown with keyboard controls. The previous deployed timetable correction is also synced to GitHub in `c7f6b99`.
 
 The build and all 39 tests pass. Desktop/mobile layout and dropdown interactions were checked. In the signed-in production Dia session, real AI returned the expected notice preview; no test announcement was published. Public `/` and `/admin` return 200, private paths return 404, and an unsigned AI request returns 401. The 15-minute Vercel runtime scan found no errors. See `output/admin-ui-2026-11-12/RESULTS.md` and `production-checks.json` for the verification record.
+
+### Temporary Savanna testing — 12 November 2026
+
+Deployment `dpl_3552jWkr476cvdHsBJ9R1HU58Gmp` is READY on https://shuttle-wise.vercel.app, using source commit `8a93f5e`. Both check-ins temporarily use Savanna Bukit Jalil (`3.0562257, 101.687699`) through the new `VITE_PICKUP_PROFILE=savanna` setting and separate Savanna coordinate variables. The original APU and LRT coordinate variables remain unchanged. Set the profile to `original` and redeploy to restore them.
+
+At the user's request, the shared `shutterbus` database now intentionally retains 30 sample check-ins and 6 sample open rides, split evenly between directions. Every new ID uses the `sample-savanna-20261112-` prefix. The existing history record was preserved. The exact 84-document manifest, private pre-seed snapshot, and targeted cleanup script are under ignored `.firebase/savanna-demo-2026-11-12/`; no database reset was used.
+
+The build and 42 tests pass. Dia shows the new notice, 15 waiting students on each route and six labelled sample rides. No production GPS override was used; an actual-device check-in at Savanna remains a physical test. The public pages return 200, private paths return 404, unsigned AI returns 401, and the 15-minute runtime scan found no errors. See `output/savanna-demo-2026-11-12/RESULTS.md` for configuration, verification and restoration details.

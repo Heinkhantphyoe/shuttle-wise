@@ -1,0 +1,27 @@
+{
+  "project": "shutterbus",
+  "created": 84,
+  "sampleCheckIns": {
+    "apu": 15,
+    "lrt": 15
+  },
+  "sampleOpenRides": {
+    "apu": 3,
+    "lrt": 3
+  },
+  "totalAfter": {
+    "activity": 30,
+    "history": 31,
+    "rides": 6,
+    "rideListings": 6,
+    "rideMemberships": 12
+  },
+  "samplesAfter": {
+    "activity": 30,
+    "history": 30,
+    "rides": 6,
+    "rideListings": 6,
+    "rideMemberships": 12
+  },
+  "preservedExistingDocuments": 1
+}

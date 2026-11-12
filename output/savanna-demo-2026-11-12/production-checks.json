@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-11-12T14:31:08.874Z",
+  "pages": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/admin",
+      "status": 200
+    },
+    {
+      "path": "/.env",
+      "status": 404
+    },
+    {
+      "path": "/worker/.dev.vars",
+      "status": 404
+    },
+    {
+      "path": "/.firebase/private-check",
+      "status": 404
+    }
+  ],
+  "asset": "/assets/index-DJ0A2DR0.js",
+  "savannaProfile": true,
+  "originalsStillPresent": true,
+  "sampleRideLabels": true,
+  "unsignedAiStatus": 401
+}
