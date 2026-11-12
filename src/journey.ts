@@ -1,4 +1,4 @@
-import { continuousService, departuresOn, routeLabel, scheduleFor, serviceDate, serviceDay, timeOn, timetableSource, type RouteId } from './schedule.ts'
+import { departuresOn, routeLabel, scheduleFor, serviceDate, serviceDay, timeOn, timetableSource, type RouteId } from './schedule.ts'
 import { noticeExpiresAt, validSettings, type NoticeChange, type TransportNotice, type TravelSettings } from './travel-contract.ts'
 
 export type Trip = {
@@ -41,7 +41,6 @@ export function effectiveSchedule(route: RouteId, now: number, notices: Transpor
     const day = serviceDay(timeOn(date, '00:00'))
     const applicable = visible.filter(notice => notice.serviceDate === date)
     for (const original of departuresOn(route, day)) {
-      if (route === 'lrt' && original === timeOn(date, '07:30')) continue
       const operations = applicable.flatMap(notice => notice.changes.filter(change => change.route === route
         && affects(change, original, date) && !['info', 'pickup'].includes(change.type)).map(change => ({ notice, change })))
       if (date === previousDate && !operations.some(({ change }) => change.type === 'delay' || change.type === 'replacement')) continue
@@ -75,20 +74,9 @@ export function effectiveSchedule(route: RouteId, now: number, notices: Transpor
     else future.push({ ...trip })
   }
   future.sort((a, b) => a.time! - b.time! || a.original - b.original)
-  const continuousStartsAt = route === 'lrt' && base.today.length && now < timeOn(today, '07:30')
-    ? timeOn(today, '07:30') : undefined
-  const continuousReference = continuousStartsAt ?? now
-  const continuousNotices = visible.filter(notice => notice.serviceDate === today).flatMap(notice => notice.changes)
-    .filter(change => change.route === route && change.start && change.end
-      && continuousReference >= timeOn(today, change.start) && continuousReference < timeOn(today, change.end))
-  const continuous = continuousService(route, now)
-  const morning = continuous || continuousStartsAt !== undefined
-  const continuousSuspended = morning && continuousNotices.some(change => change.type === 'suspend')
-  const continuousUncertain = morning && continuousNotices.some(change => ['delay', 'cancel', 'replacement'].includes(change.type))
   const unknown = trips.filter(trip => trip.time === null)
-  return { ...base, trips, future, next: continuousStartsAt !== undefined ? undefined : future[0], visible,
-    continuous, continuousStartsAt, continuousSuspended, continuousUncertain,
-    uncertain: unknown.length > 0 || continuousUncertain, conflict: trips.some(trip => trip.conflict) }
+  return { ...base, trips, future, next: future[0], visible,
+    uncertain: unknown.length > 0, conflict: trips.some(trip => trip.conflict) }
 }
 
 export function conflictingNoticeIds(draft: TransportNotice, existing: TransportNotice[]) {
@@ -137,7 +125,7 @@ export function compareJourney(input: {
   let seats = 0
   let boarding: Trip | undefined
   let busNumber: number | undefined
-  if (position !== undefined && input.notices !== undefined && !schedule.uncertain && !schedule.continuous && schedule.continuousStartsAt === undefined) {
+  if (position !== undefined && input.notices !== undefined && !schedule.uncertain) {
     for (const [index, trip] of schedule.future.entries()) {
       if (trip.capacity === null || trip.capacity <= 0) break
       seats += trip.capacity
@@ -162,10 +150,7 @@ export function compareJourney(input: {
   if (!settings?.capacity) warnings.push('Bus capacity is unconfirmed. A boarding estimate is unavailable.')
   if (settings?.demo) warnings.push('Capacity and fare references are demo assumptions.')
   if (schedule.uncertain) warnings.push(schedule.conflict ? 'Conflicting updates need admin review. An exact boarding estimate is unavailable.' : 'A delay has no confirmed revised time. An exact boarding estimate is unavailable.')
-  if (schedule.continuous) warnings.push(schedule.continuousSuspended ? 'Continuous service is temporarily suspended during the confirmed window.'
-    : 'LRT → APU runs continuously from 7:30 to 8:45 am. An exact next departure and boarding time are unavailable.')
-  if (schedule.continuousStartsAt !== undefined) warnings.push('Morning continuous service has no fixed departure or boarding time.')
-  if (position && !boarding && !schedule.continuous && !schedule.uncertain && settings?.capacity && input.notices) warnings.push('Confirmed remaining capacity does not establish a boarding time for this position.')
+  if (position && !boarding && !schedule.uncertain && settings?.capacity && input.notices) warnings.push('Confirmed remaining capacity does not establish a boarding time for this position.')
   const evidenceIds = [`schedule:${timetableSource.version}`, ...schedule.visible.map(notice => `${notice.id}@${notice.version}`)]
   if (settings) evidenceIds.push(`settings:${route}@${settings.version}`)
   if (boarding) evidenceIds.push(boarding.id)
@@ -173,8 +158,7 @@ export function compareJourney(input: {
   // No ticking countdown in this fingerprint: only meaningful fact changes request new AI text.
   const fingerprint = JSON.stringify({ route, date: serviceDate(now), noticesReady: input.notices !== undefined,
     notices: schedule.visible.map(notice => [notice.id, notice.version]), settings: settings?.version,
-    next: schedule.next?.id, nextTime: schedule.next?.time, continuous: schedule.continuous, continuousStartsAt: schedule.continuousStartsAt,
-    continuousSuspended: schedule.continuousSuspended, uncertain: schedule.uncertain,
+    next: schedule.next?.id, nextTime: schedule.next?.time, uncertain: schedule.uncertain,
     position, checkedIn, stale, boarding: boarding?.id, boardingTime: boarding?.time,
     roomsReady: input.rooms !== undefined, room: cheapest && [cheapest.id, cheapest.fare, cheapest.count], inRide: !!input.inRide, rush })
   return { route, schedule, queueCount: queue?.length, position, checkedIn, joinedAt, boarding, busNumber,
@@ -197,8 +181,6 @@ export function adviceFacts(comparison: ReturnType<typeof compareJourney>) {
   return { route: routeLabel(comparison.route), queueCount: comparison.queueCount, position: comparison.position,
     checkedIn: comparison.checkedIn, next: comparison.schedule.next, boarding: comparison.boarding,
     nextDepartureAffected: !!comparison.schedule.next?.noticeIds.length, cautionCodes,
-    continuous: comparison.schedule.continuous, continuousStartsAt: comparison.schedule.continuousStartsAt,
-    continuousSuspended: comparison.schedule.continuousSuspended,
     cheapest: comparison.cheapest, priceLabel: comparison.priceLabel, warnings: comparison.warnings,
     notices: comparison.schedule.visible.map(notice => ({ id: `${notice.id}@${notice.version}`, title: notice.title, summary: notice.summary })),
     evidenceIds: comparison.evidenceIds }

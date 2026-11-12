@@ -6,7 +6,7 @@ The React demo provides two weekday timetables, live shuttle queues and Grab sha
 
 Transport announcements now add reviewed temporary delays/cancellations without changing the standard timetable. Home and Timetable share the same route-specific calculations. See [AI_SETUP.md](AI_SETUP.md) for the admin workflow, safe Gemini key setup, and the local demo reset. New AI calls are not live until the Worker, keys, and App Check are configured.
 
-The standard dataset follows APU's schedule effective 22 October 2026: 39 APU → LRT fixed departures; 40 listed LRT → APU times with continuous service from 7:30–8:45 am. Continuous service does not have invented individual departure times. The late APU services retain their limited-space labels.
+The standard timetable matches the APSpace screenshots supplied on 11 November 2026: 51 Bukit Jalil LRT → APU departures, 7:30 am–6:20 pm; 39 APU → Bukit Jalil LRT departures, 10:35 am–9:45 pm. Morning LRT services have individual departure times. `src/schedule.ts` supplies the app and AI with the same timetable. Firebase `timetables/apu` and `timetables/lrt` store matching copies of this released version; they are not a separate live timetable editor. The late APU services retain their limited-space labels.
 
 ## Run locally
 

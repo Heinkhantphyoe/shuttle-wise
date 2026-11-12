@@ -110,8 +110,6 @@ export function noticeErrors(value: unknown): string[] {
     if (change.departures.length && window) errors.push(`${label}: choose exact departures or a time window, not both.`)
     if (change.departures.length && !weekday(serviceDay(midnight))) errors.push(`${label}: there are no standard departures on this service date.`)
     if (change.departures.some(time => !routes[change.route].departures.includes(time))) errors.push(`${label}: select departures from the standard timetable.`)
-    if (change.route === 'lrt' && ['delay', 'cancel', 'capacity', 'replacement'].includes(change.type)
-      && change.departures.some(time => time >= '07:30' && time < '08:45')) errors.push(`${label}: morning service is continuous; specify an affected time window instead of an exact departure.`)
     if (['delay', 'cancel', 'capacity'].includes(change.type) && !change.departures.length && !window) errors.push(`${label}: select exact departures or an affected window.`)
     if (change.type === 'suspend' && !window) errors.push(`${label}: a suspension needs a start and end time.`)
     if (change.type === 'capacity' && change.capacity === null) errors.push(`${label}: enter the confirmed capacity.`)

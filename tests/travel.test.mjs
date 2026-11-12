@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { adviceFacts, compareJourney, compareStudentJourney, conflictingNoticeIds, effectiveSchedule, fareRange } from '../src/journey.ts'
-import { continuousService, routes, serviceDate, timeOn } from '../src/schedule.ts'
+import { routes, serviceDate, timeOn } from '../src/schedule.ts'
 import { noticeErrors, noticeExpiresAt, parseAdvice, parseExtraction, scopeExtraction, validSettings } from '../src/travel-contract.ts'
 import { extractionResult, groundExtraction, readTransportUpdate, validateImage } from '../worker/travel.ts'
 
@@ -241,34 +241,42 @@ test('invalid/unknown capacity, stale entries, missing data and limited seats ca
   assert.equal(limited.boarding, undefined)
 })
 
-test('continuous service and Malaysia calendar boundaries do not invent fixed departures', () => {
-  assert.equal(continuousService('lrt', at('07:30')), true)
-  assert.equal(continuousService('lrt', at('08:44')), true)
-  assert.equal(continuousService('lrt', at('08:45')), false)
-  assert.equal(continuousService('apu', at('08:00')), false)
-  assert.equal(compare({ route: 'lrt', now: at('08:00'), queue: queue(1, at('07:59')) }).boarding, undefined)
-  const suspend = notice({ changes: [change({ route: 'lrt', type: 'suspend', departures: [], delayMinutes: null, start: '07:45', end: '08:30' })] })
-  assert.equal(compare({ route: 'lrt', now: at('08:00'), notices: [suspend] }).schedule.continuousSuspended, true)
-  assert.equal(serviceDate(Date.parse('2026-11-08T16:00:00Z')), date)
-  const weekend = compare({ now: timeOn('2026-11-08', '14:00') })
-  assert.equal(weekend.schedule.future.length, 0)
-  assert.equal(weekend.schedule.nextWeekday, at('10:35'))
-})
-
-test('upcoming continuous service is a start window, never fixed morning trips or a boarding estimate', () => {
+test('APSpace morning departures, suspensions and Malaysia calendar boundaries', () => {
   const input = { route: 'lrt', now: at('06:00'), queue: queue(1, at('05:59')) }
   const before = compare(input)
-  assert.equal(before.schedule.continuousStartsAt, at('07:30'))
-  assert.equal(before.schedule.next, undefined)
-  assert.equal(before.boarding, undefined)
-  assert.ok(before.schedule.trips.every(trip => trip.original >= at('08:45')))
-  assert.ok(!routes.lrt.departures.includes('07:35'))
-  assert.equal(compare({ ...input, now: at('08:45') }).schedule.next.original, at('08:45'))
-  assert.equal(compare({ ...input, now: timeOn('2026-11-08', '06:00') }).schedule.continuousStartsAt, undefined)
-  const suspension = notice({ changes: [change({ route: 'lrt', type: 'suspend', departures: [], delayMinutes: null, start: '07:30', end: '08:45' })] })
-  assert.equal(compare({ ...input, notices: [suspension] }).schedule.continuousSuspended, true)
-  const { id, status, version, updatedAt, ...morningDraft } = notice({ changes: [change({ route: 'lrt', departures: ['07:30'] })] })
-  assert.ok(noticeErrors(morningDraft).some(error => error.includes('continuous')))
+  assert.equal(before.schedule.next.original, at('07:30'))
+  assert.equal(before.boarding.time, at('07:30'))
+  assert.equal(before.schedule.trips.length, 51)
+  for (const [now, next] of [['07:30', '07:30'], ['07:31', '07:35'], ['08:00', '08:00'], ['08:36', '08:45']]) {
+    assert.equal(compare({ ...input, now: at(now) }).schedule.next.original, at(next))
+  }
+  const suspend = notice({ changes: [change({ route: 'lrt', type: 'suspend', departures: [], delayMinutes: null, start: '07:45', end: '08:30' })] })
+  const suspended = compare({ ...input, now: at('08:00'), notices: [suspend] }).schedule
+  assert.equal(suspended.next.original, at('08:30'))
+  assert.equal(suspended.trips.find(trip => trip.original === at('08:00')).cancelled, true)
+  assert.equal(suspended.trips.find(trip => trip.original === at('08:30')).cancelled, false)
+  assert.equal(serviceDate(Date.parse('2026-11-08T16:00:00Z')), date)
+  for (const [route, first] of [['lrt', '07:30'], ['apu', '10:35']]) {
+    const weekend = compare({ route, now: timeOn('2026-11-08', '14:00') })
+    assert.equal(weekend.schedule.future.length, 0)
+    assert.equal(weekend.schedule.nextWeekday, at(first))
+  }
+})
+
+test('exact morning announcements are allowed and expiry restores the original timetable', () => {
+  const original = JSON.stringify(routes)
+  for (const [route, departure] of [['lrt', '07:30'], ['lrt', '07:35'], ['lrt', '08:35'], ['apu', '10:35']]) {
+    const update = notice({ changes: [change({ route, departures: [departure], delayMinutes: 10 })] })
+    const { id, status, version, updatedAt, ...draft } = update
+    assert.deepEqual(noticeErrors(draft), [])
+    const base = at(departure)
+    const active = effectiveSchedule(route, base, [update])
+    assert.equal(active.trips.find(trip => trip.original === base).time, base + 600_000)
+    const expired = effectiveSchedule(route, base + 660_000, [update])
+    assert.equal(expired.visible.length, 0)
+    assert.equal(expired.trips.find(trip => trip.original === base).time, base)
+  }
+  assert.equal(JSON.stringify(routes), original)
 })
 
 test('a Friday delay remains in the effective timetable after Saturday midnight', () => {

@@ -56,6 +56,12 @@ Verified in Safari: the production student page starts an anonymous Firebase ses
 
 The normal 5:10 pm rain delay had already ended; its original timetable row was shown in the hosted student timetable and its record remained in expired admin history.
 
+### Test data reset — 11 November 2026, after deployment
+
+At the user's request, the stored testing data was backed up privately and 32 operational documents were removed: two check-ins, test ride records/memberships/listings, seven history events, test announcements/audits, the notice revision record and the AI quota counter. All nine operational collections were verified empty afterward. The live production admin dashboard showed **0 students on both routes**, no published announcements and zero live history.
+
+Admin access, Firebase Auth accounts, route settings, security rules, Firebase/Vercel configuration and API keys were preserved. The private backup is under ignored `.firebase/production-2026-11-11/test-cleanup-2026-11-11T10-07-59-442Z/`. Future shared-Firebase tests must track and clean up their own document IDs before handoff; this is recorded in `AGENTS.md`.
+
 The public root and `/admin` return HTTP 200. The repaired AI function returns HTTP 401 JSON for an unsigned request, rather than a server startup error. Private environment/Worker/Firebase paths return 404.
 
 Positive production check-in, hosting and joining still require an on-site test at the actual pickup. No GPS override was used. The prior two-browser local test and both-route emulator workflows are documented separately in `output/two-browser-validation-2026-11-11/RESULTS.md`.
@@ -71,3 +77,5 @@ Production environment changes require a new deployment. Preview deployments do 
 After any deployment, check `/`, `/admin`, anonymous student data, Google admin sign-in, real notice extraction and admin briefing. Check that `/.env`, `/worker/.dev.vars` and `/.firebase/*` return 404, and unsigned AI requests return 401. Test check-in, host and join at the real pickup points; do not bypass production GPS.
 
 References: [Vite on Vercel](https://vercel.com/docs/frameworks/frontend/vite), [Vercel Node functions](https://vercel.com/docs/functions/runtimes/node-js), [Firebase App Check](https://firebase.google.com/docs/app-check/web/recaptcha-enterprise-provider).
+
+Timetable correction, 11 November 2026 at 10:53 pm Malaysia time: deployment `dpl_BvGAeeTRMbXEeMnMAQPxXjiF5pvG` is READY on https://shuttle-wise.vercel.app. Standard times now match the user's two APSpace screenshots: 51 Bukit Jalil → APU fixed departures from 07:30, and 39 APU → Bukit Jalil departures from 10:35. Both complete route lists were checked in Dia and Safari. Firebase `timetables/lrt` and `timetables/apu` hold matching release copies; application and AI calculations continue to use the shared bundled schedule. All 39 tests and the production build pass. See `output/timetable-correction-2026-11-11/RESULTS.md` for verification.

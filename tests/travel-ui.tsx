@@ -15,14 +15,14 @@ const comparison = compareJourney({ route: 'apu', now, uid: 'fixture', queue: []
   changes: [{ route: 'apu', type: 'delay', departures: ['21:45'], delayMinutes: 180, revisedTime: null, start: null, end: null, capacity: null, pickup: '' }],
 }] })
 const morning = timeOn('2026-11-09', '08:00')
-const continuous = compareJourney({ route: 'lrt', now: morning, uid: 'fixture', queue: [], rooms: [], notices: [] })
+const morningComparison = compareJourney({ route: 'lrt', now: morning, uid: 'fixture', queue: [], rooms: [], notices: [] })
 
 createRoot(document.getElementById('root')!).render(<main className="app student-app">
   <h1>Local regression fixtures</h1><p>Artificial dates and notices. No real users or service changes.</p>
   <section data-testid="overnight"><h2>Friday delay continuing into Saturday</h2>
     <NextDeparture comparison={comparison} now={now} /><TravelTimetable comparison={comparison} now={now} />
   </section>
-  <section data-testid="continuous"><h2>Continuous morning service</h2>
-    <NextDeparture comparison={continuous} now={morning} /><TravelTimetable comparison={continuous} now={morning} />
+  <section data-testid="morning"><h2>Scheduled morning departures</h2>
+    <NextDeparture comparison={morningComparison} now={morning} /><TravelTimetable comparison={morningComparison} now={morning} />
   </section>
 </main>)

@@ -2,7 +2,7 @@
 
 ## Routes and timetable
 
-- Support exactly two routes. Use the [official APU schedule effective 22 October 2026](https://publicwebsite-media.apu.edu.my/assets/2026-10/2026Oct22_APU-SHUTTLE-SERVICES.pdf): **39 APU → Bukit Jalil LRT departures, 10:35 a.m.–9:45 p.m.**, and **40 listed Bukit Jalil LRT → APU times, 7:30 a.m.–6:20 p.m.**, with continuous morning service from **7:30–8:45 a.m.**, without invented fixed times within that period.
+The standard timetable matches the APSpace screenshots supplied on 11 November 2026: 51 Bukit Jalil LRT → APU departures, 7:30 am–6:20 pm; 39 APU → Bukit Jalil LRT departures, 10:35 am–9:45 pm. Morning LRT services have individual departure times. The late APU services retain their limited-space labels.
 - Use the transcribed times **Monday through Friday, Malaysia time**, as the demo schedule. Show no scheduled service on weekends. After the last departure, show that service has ended for the day and display the next weekday’s first departure separately.
 - Configure each route’s pickup coordinates separately. Confirm the boarding spot before enabling check-in for that route.
 

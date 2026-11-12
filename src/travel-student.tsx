@@ -108,26 +108,15 @@ export function TravelAnnouncements({ comparison, now }: { comparison: Compariso
 export function NextDeparture({ comparison, now }: { comparison: Comparison; now: number }) {
   const { schedule } = comparison
   const next = schedule.next
-  const continuous = schedule.continuous && !schedule.continuousSuspended
-  if (schedule.continuousStartsAt !== undefined) return <section className="hero departure-card">
-    <small>Morning shuttle</small>
-    <h2>{schedule.continuousSuspended ? 'Morning service suspended' : schedule.continuousUncertain ? 'Morning service disrupted' : 'Continuous service'}</h2>
-    {!schedule.continuousSuspended && !schedule.continuousUncertain && <p>Service starts at {formatTime(schedule.continuousStartsAt)} · in {minutesUntil(schedule.continuousStartsAt, now)}.</p>}
-    <p>7:30–8:45 am · no fixed departure times.</p>
-    <p className="departure-route"><span>Malaysia time · timetable estimate</span></p>
-  </section>
   return <section className="hero departure-card">
-    <small>{continuous ? 'Morning shuttle' : !next ? 'Shuttle service' : next.noticeIds.length ? 'Next shuttle · updated' : 'Next scheduled shuttle'}</small>
-    <h2 className={!continuous && next ? 'departure-time' : undefined}>{continuous ? 'Continuous service'
-      : next ? formatTime(next.time!) : schedule.uncertain ? 'Time unconfirmed'
+    <small>{!next ? 'Shuttle service' : next.noticeIds.length ? 'Next shuttle · updated' : 'Next scheduled shuttle'}</small>
+    <h2 className={next ? 'departure-time' : undefined}>{next ? formatTime(next.time!) : schedule.uncertain ? 'Time unconfirmed'
       : schedule.today.length ? 'Service ended' : 'No service today'}</h2>
-    {continuous ? <p>7:30–8:45 am · no fixed times{schedule.continuousUncertain ? ' · disruption reported' : ''}.</p>
-      : next && <p>{next.noticeIds.length ? 'Expected' : 'Scheduled'} in {minutesUntil(next.time!, now)}.</p>}
+    {next && <p>{next.noticeIds.length ? 'Expected' : 'Scheduled'} in {minutesUntil(next.time!, now)}.</p>}
     {next && next.original !== next.time && <p>Originally {formatTime(next.original)} → expected {formatTime(next.time!)} · admin update.</p>}
     {next?.limited && <p>Limited space.</p>}
     {schedule.uncertain && <p>Some revised times are unconfirmed. Check updates.</p>}
-    {!next && !continuous && <p>Next service: {formatWeekday(schedule.nextWeekday)}, {formatTime(schedule.nextWeekday)}.</p>}
-    {schedule.continuousSuspended && <p>Morning service temporarily suspended.</p>}
+    {!next && <p>Next service: {formatWeekday(schedule.nextWeekday)}, {formatTime(schedule.nextWeekday)}.</p>}
     <p className="departure-route"><span>Malaysia time · timetable estimate</span></p>
   </section>
 }
@@ -136,8 +125,7 @@ export function TravelTimetable({ comparison, now }: { comparison: Comparison; n
   const { schedule } = comparison
   return <section className="card travel-timetable">
     <h2>{formatWeekday(now)} departures</h2><p>{routeLabel(comparison.route)} · Malaysia time</p>
-    {comparison.route === 'lrt' && <p className="notice">Weekdays, 7:30–8:45 am: continuous service without fixed departure times. Confirmed suspension/delay windows appear in the announcements.</p>}
-    {schedule.trips.length ? <ul className="times">{schedule.trips.map(trip => <li key={trip.id} data-next={!schedule.continuous && trip.id === schedule.next?.id || undefined}>
+    {schedule.trips.length ? <ul className="times">{schedule.trips.map(trip => <li key={trip.id} data-next={trip.id === schedule.next?.id || undefined}>
       <div><time dateTime={new Date(trip.original).toISOString()}>{formatTime(trip.original)}</time>
         {trip.time !== null && trip.time !== trip.original && <strong className="revised-time"> → {formatTime(trip.time)}</strong>}
         {serviceDate(trip.original) !== serviceDate(now) && <small className="trip-detail">Original service date: {serviceDate(trip.original)}</small>}
@@ -145,9 +133,9 @@ export function TravelTimetable({ comparison, now }: { comparison: Comparison; n
         {trip.noticeIds.length > 0 && <small className="trip-detail">Admin update applied</small>}
       </div>
       <span>{trip.cancelled ? 'Cancelled / suspended' : trip.conflict ? 'Conflicting updates' : trip.time === null ? 'Delay · time unknown'
-        : trip.replacement ? 'Replacement, not an extra bus' : trip.time !== trip.original ? 'Reported revised time' : trip.time < now ? 'Scheduled earlier' : trip.id === schedule.next?.id && !schedule.continuous ? 'Next shuttle' : 'Upcoming'}</span>
+        : trip.replacement ? 'Replacement, not an extra bus' : trip.time !== trip.original ? 'Reported revised time' : trip.time < now ? 'Scheduled earlier' : trip.id === schedule.next?.id ? 'Next shuttle' : 'Upcoming'}</span>
     </li>)}</ul> : <p>No standard service today. Shuttles run Monday through Friday.</p>}
     <p className="travel-footnote">Times are estimates and subject to traffic. Passing a scheduled time does not prove a bus departed.</p>
-    {!schedule.next && schedule.continuousStartsAt === undefined && <p>Next weekday’s standard service: {formatWeekday(schedule.nextWeekday)} at {formatTime(schedule.nextWeekday)}.</p>}
+    {!schedule.next && <p>Next weekday’s standard service: {formatWeekday(schedule.nextWeekday)} at {formatTime(schedule.nextWeekday)}.</p>}
   </section>
 }
