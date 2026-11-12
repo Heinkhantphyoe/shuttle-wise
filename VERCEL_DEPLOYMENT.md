@@ -79,3 +79,9 @@ After any deployment, check `/`, `/admin`, anonymous student data, Google admin 
 References: [Vite on Vercel](https://vercel.com/docs/frameworks/frontend/vite), [Vercel Node functions](https://vercel.com/docs/functions/runtimes/node-js), [Firebase App Check](https://firebase.google.com/docs/app-check/web/recaptcha-enterprise-provider).
 
 Timetable correction, 11 November 2026 at 10:53 pm Malaysia time: deployment `dpl_BvGAeeTRMbXEeMnMAQPxXjiF5pvG` is READY on https://shuttle-wise.vercel.app. Standard times now match the user's two APSpace screenshots: 51 Bukit Jalil → APU fixed departures from 07:30, and 39 APU → Bukit Jalil departures from 10:35. Both complete route lists were checked in Dia and Safari. Firebase `timetables/lrt` and `timetables/apu` hold matching release copies; application and AI calculations continue to use the shared bundled schedule. All 39 tests and the production build pass. See `output/timetable-correction-2026-11-11/RESULTS.md` for verification.
+
+### Admin notice UI — 12 November 2026
+
+Deployment `dpl_FDKBvWFfyrDcj7GqLM5N79ghhBx2` is READY on https://shuttle-wise.vercel.app. It uses GitHub commit `216e3a7` on `main`. The admin form now uses **Create notice preview**, includes a short three-step guide, and provides a styled direction dropdown with keyboard controls. The previous deployed timetable correction is also synced to GitHub in `c7f6b99`.
+
+The build and all 39 tests pass. Desktop/mobile layout and dropdown interactions were checked. In the signed-in production Dia session, real AI returned the expected notice preview; no test announcement was published. Public `/` and `/admin` return 200, private paths return 404, and an unsigned AI request returns 401. The 15-minute Vercel runtime scan found no errors. See `output/admin-ui-2026-11-12/RESULTS.md` and `production-checks.json` for the verification record.

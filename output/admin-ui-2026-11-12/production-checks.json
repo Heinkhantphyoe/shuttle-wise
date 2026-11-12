@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-11-12T11:38:58.276Z",
+  "pages": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/admin",
+      "status": 200
+    },
+    {
+      "path": "/.env",
+      "status": 404
+    },
+    {
+      "path": "/worker/.dev.vars",
+      "status": 404
+    },
+    {
+      "path": "/.firebase/private-check",
+      "status": 404
+    }
+  ],
+  "bundle": "/assets/index-ZGg2beSP.js",
+  "updatedLabels": true,
+  "unsignedAiStatus": 401
+}
